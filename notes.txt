@@ -1,0 +1,13 @@
+shape_detect.py finds squares on page. squares have to be connected. there can be no gaps
+
+finds rectangles that are really not new rectangles. 
+
+We need to align squares. squares that have certain x,y coordinates should be aligned. We take max height or width depending on alignment
+
+
+
+TODO
+-----
+Character recognition inside of rectangles
+
+Create output html
