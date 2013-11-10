@@ -1,0 +1,5 @@
+change to c++
+add other shapes or character recognition
+make gui for app
+add gestures
+make html more beautiful

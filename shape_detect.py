@@ -59,10 +59,14 @@ def createHTML(mainDiv):
     return allHTML
 
 def writeHTML(html,toScreen=True,toFile=True):
-    print html
-    f = file(filename,"w")
-    f.write(html)
-    f.close()
+    
+    if toScreen:
+        print html
+        
+    if toFile:
+        f = file(filename,"w")
+        f.write(html)
+        f.close()
     
 def createBodyHTML(div,divType,body):
 
@@ -110,8 +114,35 @@ def resizeAllDivs(div,width):
                 child.width = childWidth
                 resizeAllDivs(child,childWidth)
 
-        
+
 def createNewDiv(divList,horizontal):
+    minRow = min(divList, key=lambda div: div.row).row
+    maxRow = max(divList, key=lambda div: div.row+div.height)
+    maxRow = maxRow.row+maxRow.height
+    minCol = min(divList, key=lambda div: div.col).col
+    maxCol = max(divList, key=lambda div: div.col+div.width)
+    maxCol = maxCol.col+maxCol.width
+    
+    
+    maxW = maxCol-minCol
+    maxH = maxRow-minRow
+    print "1",maxRow
+    print "2",minCol
+    print "3",maxW
+    print "4",maxH
+
+    if horizontal == True:
+        divList.sort(key=lambda div:div.col)
+        divType=HORIZONTAL
+    else:
+        divList.sort(key=lambda div:div.row)
+        divType=VERTICAL
+        
+    div = Div(minRow,minCol,maxW,maxH,divList,divType)
+    Div.setId(div)
+    return div
+
+def createNewDiv2(divList,horizontal):
     minRow = min(divList, key=lambda div: div.row).row
     minCol = min(divList, key=lambda div: div.col).col
 
@@ -141,16 +172,24 @@ def createNewDiv(divList,horizontal):
     div = Div(minRow,minCol,maxW,maxH,divList,divType)
     Div.setId(div)
     return div
+
+def match(div1,div2):
+    if div1.row == div2.row and div1.col==div2.col and div1.width==div2.width and div1.divType==div2.divType:
+        return True
+    else:
+        return False
     
 def findHorizontalMatch(div1,divs):
     divList = [div1]
-    
-    for div2 in divs:
-        if div1 != div2:
+    copydivs = deepcopy(divs)
+    for div2 in copydivs:
+        if not match(div1,div2):
             print "Horizontal test",div1,div2
             if abs(div1.row-div2.row)<100 and abs( div1.height - div2.height) < 100:
                 divList.append(div2)
-                divs.remove(div2)
+                for origdiv in divs:
+                    if match(origdiv,div2):
+                        divs.remove(origdiv)
 
     print "Divlist: ",divList
     if len(divList)>1:
@@ -189,6 +228,20 @@ def findVerticalMatch(div1,divs):
     return divs
 
 def setupHierarchy(divs):
+    print divs
+    
+    for div in divs:
+        divs = findHorizontalMatch(div,divs)
+
+    for div in divs:
+        divs = findVerticalMatch(div,divs)
+
+    while len(divs)>1:
+        setupHierarchy(divs)
+
+    return divs[0]
+
+def setupHierarchy2(divs):
     print divs
     
     for div in divs:
@@ -250,8 +303,11 @@ def setupRectangles(rects):
 
 
 #rects2 works
-img = cv2.imread('shapes6.png')
-gray = cv2.imread('shapes6.png',0)
+#shapes5 works
+#shapes6 works
+#shapes7 works
+img = cv2.imread('shapes5.png')
+gray = cv2.imread('shapes5.png',0)
 orig = deepcopy(img)
 ret,thresh = cv2.threshold(gray,127,255,1)
 contours,h = cv2.findContours(thresh,1,2)
@@ -287,16 +343,15 @@ oldrects = deepcopy(rects)
 mainDiv,rects = setupRectangles(rects)
 copyOfDiv = deepcopy(mainDiv)
 resizeAllDivs(copyOfDiv,MAX_PAGE_WIDTH)
-#createHTML(mainDiv,mainDiv.divType)
 html = createHTML(copyOfDiv)
 writeHTML(html)
 
-##plt.subplot(2,2,1)
-##plt.imshow(orig,'gray')
-##plt.subplot(2,2,2)        
-##plt.imshow(gray,'gray')
-##plt.subplot(2,2,3)
-##plt.imshow(thresh,'gray')
-##plt.subplot(2,2,4)
-##plt.imshow(img,'gray')
-##plt.show()
+plt.subplot(2,2,1)
+plt.imshow(orig,'gray')
+plt.subplot(2,2,2)        
+plt.imshow(gray,'gray')
+plt.subplot(2,2,3)
+plt.imshow(thresh,'gray')
+plt.subplot(2,2,4)
+plt.imshow(img,'gray')
+plt.show()
