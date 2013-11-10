@@ -4,6 +4,7 @@ from copy import deepcopy
 from matplotlib import pyplot as plt
     
 
+filename = "C:\Users\Holly\Documents\GTechDocs\Fall2013\UI Software\UI Project\Important Code\Python Image Detect\output.html"
 HORIZONTAL = 0
 VERTICAL = 1
 MAX_PAGE_WIDTH = 700
@@ -36,42 +37,53 @@ class Div():
         return self.__str__()
     
 
-def createHead():
+def createHeader():
     html = "<html>\n"
     html += "<head>\n"
     html += "</head>\n"
     html += "<body>\n"
-    print html
+    return html
 
 def createEnd():
     html = "</body>\n"
     html += "</html>\n"
-    print html
+    return html
     
 def createHTML(mainDiv):
-    createHead()
-    createBodyHTML(mainDiv,mainDiv.divType)
-    createEnd()
+    header = createHeader()
+    body = ""
+    body = createBodyHTML(mainDiv,mainDiv.divType,body)
+    end = createEnd()
     
-def createBodyHTML(div,divType):
+    allHTML = header + body + end
+    return allHTML
+
+def writeHTML(html,toScreen=True,toFile=True):
+    print html
+    f = file(filename,"w")
+    f.write(html)
+    f.close()
+    
+def createBodyHTML(div,divType,body):
 
     if div == None:
         return
     if divType==HORIZONTAL:
         #print "id: ",div.id,div.divType," float left"
         info="id=\"%d\" style=\"float:left;width:%dpx;\""%(div.id,div.width)
-        print"<div",info,">"
+        body += "<div "+info+">\n"
         if len(div.children)==0:
-            print "<p>\n",dummy_text,"<p>"
+            body += "<p>\n"+dummy_text+"</p>\n"
     else:
         #print "id: ",div.id,div.divType
         info="id=\"%d\" style=\"width:%dpx\""%(div.id,div.width)
-        print"<div",info,">"
+        body += "<div "+info+">"
         if len(div.children)==0:
-            print "<p>\n",dummy_text,"<p>"
+            body += "<p>\n"+dummy_text+"<\p>\n"
     for child in div.children:
-        createBodyHTML(child,div.divType)
-    print"</div><!-- end",div.id,"!-->"
+        body = createBodyHTML(child,div.divType,body)
+    body += "</div><!-- end"+str(div.id)+"!-->\n"
+    return body
 
 def createHTML1(div,divType):
 
@@ -101,16 +113,20 @@ def resizeAllDivs(div,width):
         
 def createNewDiv(divList,horizontal):
     minRow = min(divList, key=lambda div: div.row).row
-    maxRow = max(divList, key=lambda div: div.row+div.height)
-    maxRow = maxRow.row+maxRow.height
     minCol = min(divList, key=lambda div: div.col).col
-    maxCol = max(divList, key=lambda div: div.col+div.width)
-    maxCol = maxCol.col+maxCol.width
-    
-    
-    maxW = maxCol-minCol
-    maxH = maxRow-minRow
-    print "1",maxRow
+
+    if horizontal==True:
+        maxH = max(divList,key=lambda div: div.height).height
+    else:
+        maxH = 0
+        for div in divList:
+            maxH = maxH + div.height
+
+    maxW = 0
+    for div in divList:
+        maxW = maxW + div.width
+        
+    print "1",minRow
     print "2",minCol
     print "3",maxW
     print "4",maxH
@@ -131,20 +147,22 @@ def findHorizontalMatch(div1,divs):
     
     for div2 in divs:
         if div1 != div2:
-            if abs(div1.row-div2.row)<20 \
-               and abs( div1.height - div2.height) < 50:
+            print "Horizontal test",div1,div2
+            if abs(div1.row-div2.row)<100 and abs( div1.height - div2.height) < 100:
                 divList.append(div2)
                 divs.remove(div2)
+
+    print "Divlist: ",divList
     if len(divList)>1:
         divs.remove(div1)
-        #    print divList
         div = createNewDiv(divList,True)
         divs.append(div)
+        print "new horizontal div",div
+        for child in div.children:print "   ",child
     else:
         for div in divList:
             if div!=div1:
                 divs.append(div)
-    print divs
     return divs
 
 def findVerticalMatch(div1,divs):
@@ -154,22 +172,37 @@ def findVerticalMatch(div1,divs):
         if div1 != div2:
             print "V1",div1.col,div2.col
             print "V2",div1.width,div2.width
-            if abs(div1.col-div2.col)<20 \
-               and abs( div1.width - div2.width) < 50:
+            if abs(div1.col-div2.col)<100 \
+               and abs( div1.width - div2.width) < 100:
                 divList.append(div2)
                 divs.remove(div2)
     if len(divList)>1:
         divs.remove(div1)
         div = createNewDiv(divList,False)
         divs.append(div)
+        print "Vertical div list",divList
     else:
         for div in divList:
             if div!=div1:
                 divs.append(div)
-    print "Vert",divs
+    print "Divs now",divs
     return divs
 
 def setupHierarchy(divs):
+    print divs
+    
+    for div in divs:
+        divs = findHorizontalMatch(div,divs)
+
+    for div in divs:
+        divs = findVerticalMatch(div,divs)
+
+    if len(divs)>1:
+        setupHierarchy(divs)
+
+    return divs[0]
+
+def setupHierarchy1(divs):
     print divs
     
     for div in divs:
@@ -183,8 +216,8 @@ def setupHierarchy(divs):
 def similar(rect1,rect2):
     if abs(rect1.row-rect2.row) < 10 and \
          abs(rect1.col-rect2.col)< 10 and \
-         abs(rect1.width-rect2.width)<10 and \
-         abs(rect1.height-rect2.height)<10:
+         abs(rect1.width-rect2.width)<20 and \
+         abs(rect1.height-rect2.height)<20:
             return True
     else:
         return False
@@ -255,14 +288,15 @@ mainDiv,rects = setupRectangles(rects)
 copyOfDiv = deepcopy(mainDiv)
 resizeAllDivs(copyOfDiv,MAX_PAGE_WIDTH)
 #createHTML(mainDiv,mainDiv.divType)
-createHTML(copyOfDiv)
+html = createHTML(copyOfDiv)
+writeHTML(html)
 
-plt.subplot(2,2,1)
-plt.imshow(orig,'gray')
-plt.subplot(2,2,2)        
-plt.imshow(gray,'gray')
-plt.subplot(2,2,3)
-plt.imshow(thresh,'gray')
-plt.subplot(2,2,4)
-plt.imshow(img,'gray')
-plt.show()
+##plt.subplot(2,2,1)
+##plt.imshow(orig,'gray')
+##plt.subplot(2,2,2)        
+##plt.imshow(gray,'gray')
+##plt.subplot(2,2,3)
+##plt.imshow(thresh,'gray')
+##plt.subplot(2,2,4)
+##plt.imshow(img,'gray')
+##plt.show()
