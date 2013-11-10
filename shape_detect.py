@@ -6,6 +6,9 @@ from matplotlib import pyplot as plt
 
 HORIZONTAL = 0
 VERTICAL = 1
+MAX_PAGE_WIDTH = 700
+dummy_text = '''Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse volutpat ipsum sed feugiat facilisis. In auctor nulla vitae velit cursus, volutpat vulputate massa volutpat. Nullam ornare, purus et consectetur suscipit, felis velit lacinia nulla, vitae ornare felis erat vel augue. Donec sed tempor urna. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Cras interdum justo et faucibus malesuada. Ut ut eros magna.
+		Pellentesque ac nibh ut est porttitor lobortis. In nec justo sed metus convallis aliquet faucibus eu ante. Aenean tristique, felis quis lobortis volutpat, neque enim bibendum orci, eu fermentum nunc ligula nec est. In at sagittis felis. Cras sit amet justo ac orci viverra porta. Maecenas lobortis semper dolor quis tempus. Duis in tincidunt lectus. Donec vitae orci dolor. Aliquam pellentesque, mauris id iaculis suscipit, mi lacus elementum nisl, vitae feugiat velit lectus vitae nibh. Interdum et malesuada fames ac ante ipsum primis in faucibus. Proin hendrerit diam et eleifend laoreet. Nam turpis sapien, sollicitudin non consectetur eu, ornare at justo. Quisque arcu enim, sollicitudin vitae tortor nec, eleifend ornare turpis. Vestibulum ultricies tempor nunc at gravida. Vestibulum non dictum odio.'''
 
 class Div():
     divId = 0
@@ -32,9 +35,45 @@ class Div():
     def __repr__(self):
         return self.__str__()
     
-            
 
-def createHTML(div,divType):
+def createHead():
+    html = "<html>\n"
+    html += "<head>\n"
+    html += "</head>\n"
+    html += "<body>\n"
+    print html
+
+def createEnd():
+    html = "</body>\n"
+    html += "</html>\n"
+    print html
+    
+def createHTML(mainDiv):
+    createHead()
+    createBodyHTML(mainDiv,mainDiv.divType)
+    createEnd()
+    
+def createBodyHTML(div,divType):
+
+    if div == None:
+        return
+    if divType==HORIZONTAL:
+        #print "id: ",div.id,div.divType," float left"
+        info="id=\"%d\" style=\"float:left;width:%dpx;\""%(div.id,div.width)
+        print"<div",info,">"
+        if len(div.children)==0:
+            print "<p>\n",dummy_text,"<p>"
+    else:
+        #print "id: ",div.id,div.divType
+        info="id=\"%d\" style=\"width:%dpx\""%(div.id,div.width)
+        print"<div",info,">"
+        if len(div.children)==0:
+            print "<p>\n",dummy_text,"<p>"
+    for child in div.children:
+        createBodyHTML(child,div.divType)
+    print"</div><!-- end",div.id,"!-->"
+
+def createHTML1(div,divType):
 
     if div == None:
         return
@@ -44,6 +83,21 @@ def createHTML(div,divType):
         print "id: ",div.id,div.divType
     for child in div.children:
         createHTML(child,div.divType)
+
+def resizeAllDivs(div,width):
+    div.width=width
+    if len(div.children) > 0:
+        if div.divType ==VERTICAL:
+            #set max width of inner containers to width
+            for child in div.children:
+                child.width = width
+                resizeAllDivs(child,width)
+        else:
+            childWidth = width/len(div.children)
+            for child in div.children:
+                child.width = childWidth
+                resizeAllDivs(child,childWidth)
+
         
 def createNewDiv(divList,horizontal):
     minRow = min(divList, key=lambda div: div.row).row
@@ -106,7 +160,6 @@ def findVerticalMatch(div1,divs):
                 divs.remove(div2)
     if len(divList)>1:
         divs.remove(div1)
-        #    print divList
         div = createNewDiv(divList,False)
         divs.append(div)
     else:
@@ -155,15 +208,17 @@ def setupRectangles(rects):
     for rect in rects:
         print " (%d,%d) %d x %d " %(rect.row,rect.col,rect.width,rect.height)
     rects = removeDupRectangles(rects)
+    returnRects = deepcopy(rects)
     print "After"
     for rect in rects:
         print " (%d,%d) %d x %d " %(rect.row,rect.col,rect.width,rect.height)
     mainDiv = setupHierarchy(rects)
-    return mainDiv
+    return mainDiv,returnRects
 
-    
-img = cv2.imread('rects2.png')
-gray = cv2.imread('rects2.png',0)
+
+#rects2 works
+img = cv2.imread('shapes6.png')
+gray = cv2.imread('shapes6.png',0)
 orig = deepcopy(img)
 ret,thresh = cv2.threshold(gray,127,255,1)
 contours,h = cv2.findContours(thresh,1,2)
@@ -195,8 +250,12 @@ for cnt in contours:
 ##        print "circle"
 ##        cv2.drawContours(img,[cnt],0,(0,255,255),-1)
 
-mainDiv = setupRectangles(rects)
-createHTML(mainDiv,mainDiv.divType)
+oldrects = deepcopy(rects)
+mainDiv,rects = setupRectangles(rects)
+copyOfDiv = deepcopy(mainDiv)
+resizeAllDivs(copyOfDiv,MAX_PAGE_WIDTH)
+#createHTML(mainDiv,mainDiv.divType)
+createHTML(copyOfDiv)
 
 plt.subplot(2,2,1)
 plt.imshow(orig,'gray')
@@ -207,7 +266,3 @@ plt.imshow(thresh,'gray')
 plt.subplot(2,2,4)
 plt.imshow(img,'gray')
 plt.show()
-
-#cv2.imshow('img',img)
-#cv2.waitKey(0)
-cv2.destroyAllWindows()
