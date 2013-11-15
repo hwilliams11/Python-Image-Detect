@@ -68,8 +68,7 @@ void checkShapeType() {
 							count += 1;
 					}
 					if (count == 3) {
-						myShapes[i].type = 'T'; // big T indicating its a text object
-						
+						myShapes[i].type = 'T'; // big T indicating its a text object						
 						count = 0; // reset variables
 						myShapes.erase(myShapes.begin() + j); // erase useless shape
 						i -= 1; // reset i since myShapes is now smaller in size
@@ -313,20 +312,20 @@ void doWork(Mat &src_gray, int, void*)
 	vector<Point> approxShape;
 
 	/// Detect edges using canny
-	Canny(src_gray, canny_output, 0, 50, 5);
+	Canny(src_gray, canny_output, 100, 200, 3);
 	/// Find contours	
 	findContours(canny_output, contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 	/// Draw contours
 	Mat drawing = Mat::zeros(canny_output.size(), CV_8UC3);
 	for (int i = 0; i < contours.size(); i++)
-	{
+	{		
 		approxPolyDP(Mat(contours[i]), approxShape, arcLength(Mat(contours[i]), true)*0.02, true);
 		if (checkShapes(approxShape)) {
 			// do nothing because it's a duplicate
 		}
 		else {
 			myShape newShape(approxShape);
-			newShape.pointSort();
+			newShape.pointSortX();
 			if (approxShape.size() == 3)
 				newShape.type = 't'; // t for triangle
 			else if (approxShape.size() == 4)
@@ -344,7 +343,7 @@ void doWork(Mat &src_gray, int, void*)
 
 
 int main(int argc, char** argv) {
-	string file = "C:/Users/Nicholas/Desktop/test.png";
+	string file = "C:/Users/Nicholas/Desktop/test1.png";
 	Mat img, gray;
 	readImage(file, &img, &gray);
 	doWork(gray, 0, 0);

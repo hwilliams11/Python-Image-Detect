@@ -6,7 +6,10 @@ myShape::myShape(vector<Point> points1) {
 	type = 'd'; // d for default
 }
 
-void myShape::pointSort() {
-	std::sort(points.begin(), points.end(), pointSortX());
-	std::sort(points.begin(), points.end(), pointSortY());
+void myShape::pointSortX() {
+	std::sort(points.begin(), points.end(), pointSortXStruct());
+}
+
+void myShape::pointSortY() {
+	std::sort(points.begin(), points.end(), pointSortYStruct());
 }

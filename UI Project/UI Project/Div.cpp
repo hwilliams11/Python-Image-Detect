@@ -22,10 +22,12 @@ Div::Div(Div *div){
 }
 
 Div::Div(myShape *ms) {
-	this->row = ms->points[0].y;
+	ms->pointSortX();
 	this->col = ms->points[0].x;
-	this->width = abs(ms->points[1].x - ms->points[0].x);
-	this->height = abs(ms->points[2].y - ms->points[0].y);
+	this->width = abs(ms->points[3].x - ms->points[0].x);
+	ms->pointSortY();
+	this->row = ms->points[0].y;	
+	this->height = abs(ms->points[3].y - ms->points[0].y);
 	this->children = (vector<Div>)NULL;
 	this->divType = -1;
 }

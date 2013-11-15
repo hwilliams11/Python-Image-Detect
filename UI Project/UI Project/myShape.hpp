@@ -14,17 +14,18 @@ public:
 	size_t size;
 	char type;
 
-	myShape(vector<Point> points1);	
-	struct pointSortX {
+	myShape(vector<Point> points1);
+	struct pointSortXStruct {
 		bool operator()(const Point& a, const Point& b) const {
 			return (a.x < b.x);
 		}
 	};
-	struct pointSortY {
+	struct pointSortYStruct {
 		bool operator()(const Point& a, const Point& b) const {
 			return (a.y < b.y);
 		}
 	};
 
-	void pointSort();
+	void pointSortX();
+	void pointSortY();
 };
