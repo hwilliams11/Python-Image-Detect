@@ -1,5 +1,8 @@
-change to c++
-add other shapes or character recognition
-make gui for app
-add gestures
-make html more beautiful
+gestures
+  -flip through history
+  -delete
+voice commands
+  -modify divs
+
+twitter bootstrap
+launch firefox
