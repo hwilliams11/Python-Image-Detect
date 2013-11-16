@@ -74,10 +74,12 @@ void checkShapeType() {
 	int count = 0;
 	for (int i = 0; i < myShapes.size(); i++) {
 		if (myShapes[i].type == 'r') {
+			myShapes[i].pointSortX();
 			xrange1 = myShapes[i].points[0].x;
 			xrange2 = myShapes[i].points[3].x;
+			myShapes[i].pointSortY();
 			yrange1 = myShapes[i].points[0].y;
-			yrange2 = myShapes[i].points[1].y;
+			yrange2 = myShapes[i].points[3].y;
 			for (int j = 0; j < myShapes.size(); j++) {
 				if (myShapes[j].type == 't') {
 					for (int y = 0; y < 3; y++) {
@@ -365,6 +367,8 @@ Div setupHierarchy(vector<Div> divs, int count){
 
 	if( count == 10 )
 		return divs[0];
+	if (divs.size() == 0)
+		return Div();
 
 	if (divs.size() > 1){
 		for (unsigned int i = 0; i<divs.size(); i++){
