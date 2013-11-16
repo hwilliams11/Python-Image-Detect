@@ -24,37 +24,45 @@ bool checkShapes(vector<Point> shapeVector) {
 	myShape newShape(shapeVector);
 	newShape.pointSortX();
 	shapeVector = newShape.points;
-	bool * alreadyUsed = new bool[shapeSize];
-	for (int z = 0; z < shapeSize; z++)
-		alreadyUsed[z] = false;
-	double xrange1, yrange1, xrange2, yrange2;
+
+	double xrange1, yrange1, xrange2, yrange2,msxrange1,msxrange2,msyrange1,msyrange2;
+	
 	for (int y = 0; y < myShapes.size(); y++) {
 		if (myShapes[y].size == shapeSize) {
+			size_t size = myShapes.size();
+			count = 0;
 			for (int i = 0; i < shapeSize; i++) {
+
 				xrange1 = shapeVector[i].x * .80;
 				xrange2 = shapeVector[i].x * 1.20;
 				yrange1 = shapeVector[i].y * .80;
 				yrange2 = shapeVector[i].y * 1.20;
-				int size = myShapes.size();
-				for (int g = 0; g < shapeSize; g++) {
-					//if (myShapes[y].points[g].x <= xrange2 && myShapes[y].points[g].x >= xrange1 && myShapes[y].points[g].y <= yrange2 && myShapes[y].points[g].y >= yrange1 && !alreadyUsed[g]) {
-					if (myShapes[y].points[g].x <= xrange2 && myShapes[y].points[g].x >= xrange1 && myShapes[y].points[g].y <= yrange2 && myShapes[y].points[g].y >= yrange1 && !alreadyUsed[g]) {
-						count += 1;
-						alreadyUsed[g] = true;
-						break;
-					}
+			
+				msxrange1 = myShapes[y].points[i].x * .80;
+				msxrange2 = myShapes[y].points[i].x * 1.20;
+				msyrange1 = myShapes[y].points[i].y * .80;
+				msyrange2 = myShapes[y].points[i].y * 1.20;
+
+				bool myShapeInNewShape=false;
+				bool newShapeInMyShape=false;
+				/*
+				if( myShapes[y].points[i].x <= xrange2 && myShapes[y].points[i].x >= xrange1 && myShapes[y].points[i].y <= yrange2 && myShapes[y].points[i].y >= yrange1 ){
+				myShapeInNewShape = true;
+				}
+				if( shapeVector[i].x <= msxrange2 && shapeVector[i].x >= msxrange1 && shapeVector[i].y <= msyrange2 && shapeVector[i].y >= msyrange1 ){
+				newShapeInMyShape = true;
+				}
+				if ( myShapeInNewShape || newShapeInMyShape ) {
+					count += 1;
+				}*/
+				if( ( abs( myShapes[y].points[i].x-shapeVector[i].x ) < 50 ) && ( abs( myShapes[y].points[i].y-shapeVector[i].y ) < 50 ) ){
+					count+=1;
 				}
 			}
-			if (count == shapeSize) {
-				delete[] alreadyUsed;
-				return true;
-			}
-			count = 0;
-			for (int z = 0; z < shapeSize; z++)
-				alreadyUsed[z] = false;
+			if( count == shapeSize )
+			return true;
 		}
 	}
-	delete[] alreadyUsed;
 	return false;
 }
 
@@ -185,7 +193,7 @@ void resizeAllDivs(Div &div,int width){
 			}
 		}
 		else{
-			int childWidth = width/div.children.size();
+			size_t childWidth = width/div.children.size();
 			for (int i = 0; i < div.children.size(); i++){
 
 				resizeAllDivs(div.children[i],childWidth);
@@ -268,8 +276,8 @@ vector<Div> findHorizontalMatch(int divIndex, vector<Div>divs){
 		Div div2 = divs[i];
 		if (!div1.match(div2)){
 
-			if (abs(div1.row - div2.row) < 100 &&
-				abs(div1.height - div2.height)<100){
+			if (abs(div1.row - div2.row) < 80 &&
+				abs(div1.height - div2.height)<80){
 				divListIndex.push_back(i);
 			}
 		}
@@ -315,8 +323,8 @@ vector<Div> findVerticalMatch(int divIndex, vector<Div>divs){
 		Div div2 = divs[i];
 		if (!div1.match(div2)){
 
-			if (abs(div1.col - div2.col) < 100 &&
-				abs(div1.width - div2.width)<100){
+			if (abs(div1.col - div2.col) < 80 &&
+				abs(div1.width - div2.width)<80){
 				divListIndex.push_back(i);
 			}
 		}
@@ -355,6 +363,9 @@ vector<Div> findVerticalMatch(int divIndex, vector<Div>divs){
 }
 Div setupHierarchy(vector<Div> divs, int count){
 
+	if( count == 10 )
+		return divs[0];
+
 	if (divs.size() > 1){
 		for (unsigned int i = 0; i<divs.size(); i++){
 			divs = findHorizontalMatch(i, divs);
@@ -381,18 +392,22 @@ Div setupHierarchy(vector<Div> divs, int count){
 //remove duplicates and setup hierarchy
 Div setUpDivs(){
 	vector<Div> tempDiv;
-	for (int i = 0; i < myShapes.size(); i++) {
-		if( myShapes[i].type=='r' || myShapes[i].type=='T' || myShapes[i].type=='I'){
-			cout <<"i: "<<i<<endl;
-			Div newDiv(&myShapes[i]);
-			newDiv.setId(divId);
-			divId += 1;
-			tempDiv.push_back(newDiv);
+	Div mainDiv;
+
+	if( myShapes.size() > 0 ){
+		for (int i = 0; i < myShapes.size(); i++) {
+			if( myShapes[i].type=='r' || myShapes[i].type=='T' || myShapes[i].type=='I'){
+				cout <<"i: "<<i<<endl;
+				Div newDiv(&myShapes[i]);
+				newDiv.setId(divId);
+				divId += 1;
+				tempDiv.push_back(newDiv);
+			}
 		}
+		printDivs(tempDiv);
+		cout<<"setup hierarchy"<<endl;
+		mainDiv = setupHierarchy(tempDiv, 0);
 	}
-	printDivs(tempDiv);
-	cout<<"setup hierarchy"<<endl;
-	Div mainDiv = setupHierarchy(tempDiv, 0);
 	return mainDiv;
 }
 
@@ -488,8 +503,8 @@ void doWork2(Mat &img,Mat &src_gray, int, void*)
 int main(int argc, char** argv) {
 
 	cout << "Choose an image file"<<endl;
-	cout << " - 1 for rects2.png'"<<endl;
-	cout << " - 2 for shapes6.png  (Doesn't work)"<<endl;
+	cout << " - 1 for rects2.png"<<endl;
+	cout << " - 2 for shapes6.png"<<endl;
 	cout << " - 3 for test.png'"<<endl;
 	cout << " - 4 for test2.png'"<<endl;
 
