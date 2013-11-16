@@ -37,6 +37,7 @@ bool checkShapes(vector<Point> shapeVector) {
 				yrange2 = shapeVector[i].y * 1.20;
 				int size = myShapes.size();
 				for (int g = 0; g < shapeSize; g++) {
+					//if (myShapes[y].points[g].x <= xrange2 && myShapes[y].points[g].x >= xrange1 && myShapes[y].points[g].y <= yrange2 && myShapes[y].points[g].y >= yrange1 && !alreadyUsed[g]) {
 					if (myShapes[y].points[g].x <= xrange2 && myShapes[y].points[g].x >= xrange1 && myShapes[y].points[g].y <= yrange2 && myShapes[y].points[g].y >= yrange1 && !alreadyUsed[g]) {
 						count += 1;
 						alreadyUsed[g] = true;
@@ -381,7 +382,7 @@ Div setupHierarchy(vector<Div> divs, int count){
 Div setUpDivs(){
 	vector<Div> tempDiv;
 	for (int i = 0; i < myShapes.size(); i++) {
-		if( myShapes[i].type='r' ){
+		if( myShapes[i].type=='r' || myShapes[i].type=='T' || myShapes[i].type=='I'){
 			cout <<"i: "<<i<<endl;
 			Div newDiv(&myShapes[i]);
 			newDiv.setId(divId);
@@ -488,7 +489,7 @@ int main(int argc, char** argv) {
 
 	cout << "Choose an image file"<<endl;
 	cout << " - 1 for rects2.png'"<<endl;
-	cout << " - 2 for shapes6.png'"<<endl;
+	cout << " - 2 for shapes6.png  (Doesn't work)"<<endl;
 	cout << " - 3 for test.png'"<<endl;
 	cout << " - 4 for test2.png'"<<endl;
 
@@ -499,7 +500,7 @@ int main(int argc, char** argv) {
 	switch( choice ){
 
 		case 1:{file="rects2.png";break;}
-		case 2:{file="shapes6.png (Doesn't work)";break;}
+		case 2:{file="shapes6.png";break;}
 		case 3:{file="test.png";break;}
 		case 4:{file="test2.png";break;}
 		default:{file="test.png";break;}
