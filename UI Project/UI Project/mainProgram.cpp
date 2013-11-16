@@ -1,6 +1,6 @@
 #include "Div.hpp"
 #include "myShape.hpp"
-
+#include <fstream>
 using namespace cv;
 using namespace std;
 
@@ -8,8 +8,12 @@ int divId = 0;
 RNG rng(12345);
 const int HORIZONTAL = 0;
 const int VERTICAL = 1;
+const int MAX_PAGE_WIDTH = 700;
 vector<myShape> myShapes; // vector to hold shapes
 vector<myShape> deletedShapes; // second vector hold deleted shapes, so you can undo the delete if you want
+string dummyText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse volutpat ipsum sed feugiat facilisis. In auctor nulla vitae velit cursus, volutpat vulputate massa volutpat. Nullam ornare, purus et consectetur suscipit, felis velit lacinia nulla, vitae ornare felis erat vel augue. Donec sed tempor urna. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Cras interdum justo et faucibus malesuada. Ut ut eros magna.\
+		Pellentesque ac nibh ut est porttitor lobortis. In nec justo sed metus convallis aliquet faucibus eu ante. Aenean tristique, felis quis lobortis volutpat, neque enim bibendum orci, eu fermentum nunc ligula nec est. In at sagittis felis. Cras sit amet justo ac orci viverra porta. Maecenas lobortis semper dolor quis tempus. Duis in tincidunt lectus. Donec vitae orci dolor. Aliquam pellentesque, mauris id iaculis suscipit, mi lacus elementum nisl, vitae feugiat velit lectus vitae nibh. Interdum et malesuada fames ac ante ipsum primis in faucibus. Proin hendrerit diam et eleifend laoreet. Nam turpis sapien, sollicitudin non consectetur eu, ornare at justo. Quisque arcu enim, sollicitudin vitae tortor nec, eleifend ornare turpis. Vestibulum ultricies tempor nunc at gravida. Vestibulum non dictum odio.";
+
 
 //non member functions 
 //check to make sure there are no duplicates in the shapesvector.
@@ -17,6 +21,9 @@ vector<myShape> deletedShapes; // second vector hold deleted shapes, so you can 
 bool checkShapes(vector<Point> shapeVector) {
 	int count = 0;
 	size_t shapeSize = shapeVector.size();
+	myShape newShape(shapeVector);
+	newShape.pointSortX();
+	shapeVector = newShape.points;
 	bool * alreadyUsed = new bool[shapeSize];
 	for (int z = 0; z < shapeSize; z++)
 		alreadyUsed[z] = false;
@@ -28,6 +35,7 @@ bool checkShapes(vector<Point> shapeVector) {
 				xrange2 = shapeVector[i].x * 1.20;
 				yrange1 = shapeVector[i].y * .80;
 				yrange2 = shapeVector[i].y * 1.20;
+				int size = myShapes.size();
 				for (int g = 0; g < shapeSize; g++) {
 					if (myShapes[y].points[g].x <= xrange2 && myShapes[y].points[g].x >= xrange1 && myShapes[y].points[g].y <= yrange2 && myShapes[y].points[g].y >= yrange1 && !alreadyUsed[g]) {
 						count += 1;
@@ -60,7 +68,7 @@ void checkShapeType() {
 			xrange1 = myShapes[i].points[0].x;
 			xrange2 = myShapes[i].points[3].x;
 			yrange1 = myShapes[i].points[0].y;
-			yrange2 = myShapes[i].points[3].y;
+			yrange2 = myShapes[i].points[1].y;
 			for (int j = 0; j < myShapes.size(); j++) {
 				if (myShapes[j].type == 't') {
 					for (int y = 0; y < 3; y++) {
@@ -95,6 +103,96 @@ void checkShapeType() {
 	}
 }
 
+void writeHTML(string html){
+
+
+	ofstream html_file("output.html");
+	
+	if( html_file.is_open() ){
+		html_file << html << endl;
+	}
+	html_file.close();
+}
+string createHead(){
+
+	string head = "<html>\n";
+	head += "\t<head>\n";
+	head += "\t</head>\n";
+	head += "\t<body>\n";
+	return head;
+}
+string createEnd(){
+
+	string end = "\t</body>\n";
+	end += "<html>\n";
+	return end;
+}
+string createBody(Div div,int divType,string body,int tabLevel){
+
+	string tabs;
+	for(int i=0;i<tabLevel;i++)
+		tabs+="\t";
+
+	if( divType == HORIZONTAL ){
+
+		char info[100];
+		sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
+		body += tabs+"<div "+string(info)+">\n";
+		if( div.children.size() == 0 ){
+			body += tabs+"\t<p>\n"+tabs+"\t\t"+dummyText+"\n"+tabs+"\t</p>\n";
+		}
+	}
+	else{
+
+		char info[100];
+		sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
+		body += tabs+"<div "+string(info)+">\n";
+		if( div.children.size() == 0 ){
+			body += tabs+"\t<p>\n"+tabs+"\t\t"+dummyText+"\n"+tabs+"\t</p>\n";
+		}
+
+	}
+	for( int i=0; i < div.children.size(); i++ ){
+			body = createBody(div.children[i],div.divType,body,tabLevel+1);
+	}
+	
+	body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\n";
+	return body;
+}
+string createHTML(Div mainDiv){
+
+	string head = createHead();
+	string end = createEnd();
+	string body = "";
+	body = createBody(mainDiv,mainDiv.divType,body,2);
+
+	string html = head + body + end;
+
+	return html;
+}
+void resizeAllDivs(Div &div,int width){
+
+	cout << "Width: "<<width<<endl;
+	div.width = width;
+	if( div.children.size() > 0 ){
+
+		if( div.divType==VERTICAL ){
+
+			for(int i = 0; i < div.children.size(); i++){
+
+				resizeAllDivs(div.children[i],width);
+			}
+		}
+		else{
+			int childWidth = width/div.children.size();
+			for (int i = 0; i < div.children.size(); i++){
+
+				resizeAllDivs(div.children[i],childWidth);
+			}
+			
+		}
+	}
+}
 void printDivs(vector<Div> divs){
 	for (unsigned int i = 0; i < divs.size(); i++)
 		cout << divs[i].printDiv() << endl;
@@ -259,15 +357,15 @@ Div setupHierarchy(vector<Div> divs, int count){
 	if (divs.size() > 1){
 		for (unsigned int i = 0; i<divs.size(); i++){
 			divs = findHorizontalMatch(i, divs);
-			//cout << "Divs after horizontal matching " << i <<" size: "<<divs.size() << endl;
-			//printDivs(divs);
+			cout << "Divs after horizontal matching " << i <<" size: "<<divs.size() << endl;
+			printDivs(divs);
 		}
 	}
 	if (divs.size()>1){
 		for (unsigned int i = 0; i<divs.size(); i++){
 			divs = findVerticalMatch(i, divs);
-			//cout << "Divs after vertical matching " << i <<" size: "<<divs.size() << endl;
-			//printDivs(divs);
+			cout << "Divs after vertical matching " << i <<" size: "<<divs.size() << endl;
+			printDivs(divs);
 		}
 	}
 
@@ -283,28 +381,22 @@ Div setupHierarchy(vector<Div> divs, int count){
 Div setUpDivs(){
 	vector<Div> tempDiv;
 	for (int i = 0; i < myShapes.size(); i++) {
-		Div newDiv(&myShapes[i]);
-		newDiv.setId(divId);
-		divId += 1;
-		tempDiv.push_back(newDiv);
+		if( myShapes[i].type='r' ){
+			cout <<"i: "<<i<<endl;
+			Div newDiv(&myShapes[i]);
+			newDiv.setId(divId);
+			divId += 1;
+			tempDiv.push_back(newDiv);
+		}
 	}
 	printDivs(tempDiv);
+	cout<<"setup hierarchy"<<endl;
 	Div mainDiv = setupHierarchy(tempDiv, 0);
 	return mainDiv;
 }
 
-//resize divs to fit in webpage
-void resizeAllDivs(){
-}
-//create the HTML for the page
-void createHTML(){
-}
-//write the HTML to file
-void writeHTML(){
-}
-
 /** @function thresh_callback */
-void doWork(Mat &src_gray, int, void*)
+void doWork(Mat &img,Mat &src_gray, int, void*)
 {
 	Mat canny_output;
 	vector<vector<Point> > contours;
@@ -313,44 +405,119 @@ void doWork(Mat &src_gray, int, void*)
 
 	/// Detect edges using canny
 	Canny(src_gray, canny_output, 100, 200, 3);
+
 	/// Find contours	
 	findContours(canny_output, contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 	/// Draw contours
 	Mat drawing = Mat::zeros(canny_output.size(), CV_8UC3);
 	for (int i = 0; i < contours.size(); i++)
-	{		
-		approxPolyDP(Mat(contours[i]), approxShape, arcLength(Mat(contours[i]), true)*0.02, true);
+	{
+		approxPolyDP(Mat(contours[i]), approxShape, 0.01*arcLength(Mat(contours[i]), true), true);
 		if (checkShapes(approxShape)) {
 			// do nothing because it's a duplicate
 		}
 		else {
+			Scalar color;
 			myShape newShape(approxShape);
 			newShape.pointSortX();
-			if (approxShape.size() == 3)
+			if (approxShape.size() == 3){
 				newShape.type = 't'; // t for triangle
-			else if (approxShape.size() == 4)
+				color = Scalar(0,255,0);
+			}
+			else if (approxShape.size() == 4){
 				newShape.type = 'r'; // r for rectangle
+				color = Scalar(255,0,0);
+			}
 			else {// it's a circle
-				newShape.type = 'c'; // c for circle				
+				newShape.type = 'c'; // c for circle
+				color = Scalar(0,0,255);
 			}
 			myShapes.push_back(newShape);
-			Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-			drawContours(drawing, contours, i, color, 2, 8, hierarchy, 0, Point());
+			drawContours(img, contours, i, color, 2);
 		}
 	}
+	cout << "Checking shape type"<<endl;
 	checkShapeType();
 }
+/** @function thresh_callback */
+void doWork2(Mat &img,Mat &src_gray, int, void*)
+{
+	Mat threshImage;
+	vector<vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	vector<Point> approxShape;
 
+	double ret = threshold(src_gray,threshImage,127,255,1);
+	findContours(threshImage,contours,1,2);
 
+	for (int i = 0; i < contours.size(); i++)
+	{
+		approxPolyDP(contours[i], approxShape, 0.01*arcLength(contours[i], true), true);
+		Rect rect = boundingRect( contours[i] );
+
+		if( rect.width <20 || rect.height < 20 ){
+			continue;
+		}
+		if (checkShapes(approxShape)) {
+			// do nothing because it's a duplicate
+		}
+		else {
+			Scalar color;
+			myShape newShape(approxShape);
+			newShape.pointSortX();
+			if (approxShape.size() == 3){
+				newShape.type = 't'; // t for triangle
+				color = Scalar(0,255,0);
+			}
+			else if (approxShape.size() == 4){
+				newShape.type = 'r'; // r for rectangle
+				color = Scalar(255,0,0);
+			}
+			else {// it's a circle
+				newShape.type = 'c'; // c for circle
+				color = Scalar(0,0,255);
+			}
+			myShapes.push_back(newShape);
+			drawContours(img, contours, i, color, 2);
+		}
+	}
+	cout << "Checking shape type"<<endl;
+	checkShapeType();
+}
 int main(int argc, char** argv) {
-	string file = "C:/Users/Nicholas/Desktop/test1.png";
+
+	cout << "Choose an image file"<<endl;
+	cout << " - 1 for rects2.png'"<<endl;
+	cout << " - 2 for shapes6.png'"<<endl;
+	cout << " - 3 for test.png'"<<endl;
+	cout << " - 4 for test2.png'"<<endl;
+
+	int choice = getchar()-'0';
+
+	string file;
+
+	switch( choice ){
+
+		case 1:{file="rects2.png";break;}
+		case 2:{file="shapes6.png (Doesn't work)";break;}
+		case 3:{file="test.png";break;}
+		case 4:{file="test2.png";break;}
+		default:{file="test.png";break;}
+	}
+	
 	Mat img, gray;
+	cout << "Read image" << endl;
 	readImage(file, &img, &gray);
-	doWork(gray, 0, 0);
+	cout << "Do work" << endl;
+	doWork2(img,gray, 0, 0);
+	cout << "Setup divs" << endl;
 	Div mainDiv = setUpDivs();
 	imshow("Main image", img);
 	cout << "printing hierarchy" << mainDiv.children.size() << endl;
+	resizeAllDivs(mainDiv,MAX_PAGE_WIDTH);
 	mainDiv.printDivWithChildren(0);
+	string html = createHTML(mainDiv);
+	writeHTML(html);
 	waitKey(0);
 	return 0;
 }
