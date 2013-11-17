@@ -5,7 +5,6 @@ using namespace cv;
 using namespace std;
 
 int divId = 0;
-RNG rng(12345);
 const int MAX_PAGE_WIDTH = 700;
 vector<myShape> myShapes; // vector to hold shapes
 vector<myShape> deletedShapes; // second vector hold deleted shapes, so you can undo the delete if you want
@@ -22,35 +21,31 @@ bool checkShapes(vector<Point> shapeVector) {
 	myShape newShape(shapeVector);
 	newShape.pointSortX();
 	shapeVector = newShape.points;
+	double x0 = 0, x1 = 0, y0 = 0, y1 = 0, X0 = 0, X1 = 0, Y0 = 0, Y1 = 0;
 
-	double xrange1, yrange1, xrange2, yrange2,msxrange1,msxrange2,msyrange1,msyrange2;
-	
 	for (int y = 0; y < myShapes.size(); y++) {
 		if (myShapes[y].size == shapeSize) {
 			size_t size = myShapes.size();
 			count = 0;
-			for (int i = 0; i < shapeSize; i++) {
-
-				xrange1 = shapeVector[i].x * .80;
-				xrange2 = shapeVector[i].x * 1.20;
-				yrange1 = shapeVector[i].y * .80;
-				yrange2 = shapeVector[i].y * 1.20;
-			
-				msxrange1 = myShapes[y].points[i].x * .80;
-				msxrange2 = myShapes[y].points[i].x * 1.20;
-				msyrange1 = myShapes[y].points[i].y * .80;
-				msyrange2 = myShapes[y].points[i].y * 1.20;
-
-				if( ( abs( myShapes[y].points[i].x-shapeVector[i].x ) < 50 ) && ( abs( myShapes[y].points[i].y-shapeVector[i].y ) < 50 ) ){
-					count+=1;
-				}
-			}
-			if( count == shapeSize )
-			return true;
+			myShapes[y].pointSortX();
+			x0 = myShapes[y].points[0].x;
+			x1 = myShapes[y].points.back().x;
+			X0 = newShape.points[0].x;
+			X1 = newShape.points.back().x;
+			newShape.pointSortY();
+			myShapes[y].pointSortY();
+			Y0 = newShape.points[0].y;
+			Y1 = newShape.points.back().y;
+			y0 = myShapes[y].points[0].y;
+			y1 = myShapes[y].points.back().y;
+			newShape.pointSortX();
+			if ((abs(x0 - X0) < 50) && (abs(y0 - Y0) < 50) && (abs(x1 - X1) < 50) && (abs(y1 - Y1) < 50))
+				return true;
 		}
 	}
 	return false;
 }
+
 void checkShapeType() {
         double xrange1, xrange2, yrange1, yrange2;
         int count = 0;
@@ -571,7 +566,6 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 {
 	Mat threshImage;
 	vector<vector<Point> > contours;
-	vector<Vec4i> hierarchy;
 	vector<Point> approxShape;
 
 	double ret = threshold(src_gray,threshImage,127,255,1);
