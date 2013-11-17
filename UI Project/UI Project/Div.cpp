@@ -2,12 +2,12 @@
 
 Div::Div(){
 }
-Div::Div(int row, int col, int width, int height, vector<Div>children, int divType, int divID){
+Div::Div(int row, int col, int width, int height, vector<Div>children, DivOrientation divOrientation, int divID){
 	this->row = row;
 	this->col = col;
 	this->width = width;
 	this->height = height;
-	this->divType = divType;
+	this->divOrientation = divOrientation;
 	this->children = vector<Div>(children);
 	this->id = divID;
 }
@@ -16,7 +16,7 @@ Div::Div(Div *div){
 	this->col = div->col;
 	this->width = div->width;
 	this->height = div->height;
-	this->divType = div->divType;
+	this->divOrientation = div->divOrientation;
 	this->children = div->children;
 	this->id = div->id;
 }
@@ -29,15 +29,27 @@ Div::Div(myShape *ms) {
 	this->row = ms->points[0].y;	
 	this->height = abs(ms->points[3].y - ms->points[0].y);
 	this->children = (vector<Div>)NULL;
-	this->divType = -1;
+	this->divOrientation = NONE;
+	switch( ms->type ){
+		case 'I': {this->divContent = IMAGE;break;}
+		case 'r': {this->divContent = TEXT;break;}
+		case 'T': {this->divContent = TABLE;break;}
+	}
 }
 
 void Div::setId(int divID){
 	this->id = divID;
 }
 string Div::printDiv() const {
-	char buffer[100];
-	sprintf(buffer, "(%d,%d) %d x %d", row, col, width, height);
+	char buffer[150];
+	string orient="";
+	switch( divOrientation ){
+	case HORIZONTAL: {orient = "HORIZONTAL";break;}
+	case VERTICAL:{orient = "VERTICAL";break;}
+	default:{orient="NONE";break;}
+	}
+	const char * orient2 = orient.c_str();
+	sprintf(buffer, "(%d,%d) %d x %d --- %s", row, col, width, height,orient2);
 	return string(buffer);
 }
 bool Div::match(Div div2) const {

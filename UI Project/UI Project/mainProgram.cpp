@@ -6,14 +6,12 @@ using namespace std;
 
 int divId = 0;
 RNG rng(12345);
-const int HORIZONTAL = 0;
-const int VERTICAL = 1;
 const int MAX_PAGE_WIDTH = 700;
 vector<myShape> myShapes; // vector to hold shapes
 vector<myShape> deletedShapes; // second vector hold deleted shapes, so you can undo the delete if you want
 string dummyText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse volutpat ipsum sed feugiat facilisis. In auctor nulla vitae velit cursus, volutpat vulputate massa volutpat. Nullam ornare, purus et consectetur suscipit, felis velit lacinia nulla, vitae ornare felis erat vel augue. Donec sed tempor urna. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Cras interdum justo et faucibus malesuada. Ut ut eros magna.\
 		Pellentesque ac nibh ut est porttitor lobortis. In nec justo sed metus convallis aliquet faucibus eu ante. Aenean tristique, felis quis lobortis volutpat, neque enim bibendum orci, eu fermentum nunc ligula nec est. In at sagittis felis. Cras sit amet justo ac orci viverra porta. Maecenas lobortis semper dolor quis tempus. Duis in tincidunt lectus. Donec vitae orci dolor. Aliquam pellentesque, mauris id iaculis suscipit, mi lacus elementum nisl, vitae feugiat velit lectus vitae nibh. Interdum et malesuada fames ac ante ipsum primis in faucibus. Proin hendrerit diam et eleifend laoreet. Nam turpis sapien, sollicitudin non consectetur eu, ornare at justo. Quisque arcu enim, sollicitudin vitae tortor nec, eleifend ornare turpis. Vestibulum ultricies tempor nunc at gravida. Vestibulum non dictum odio.";
-
+string dummy_image = "Sample Pictures/Desert.jpg";
 
 //non member functions 
 //check to make sure there are no duplicates in the shapesvector.
@@ -65,55 +63,50 @@ bool checkShapes(vector<Point> shapeVector) {
 	}
 	return false;
 }
-
-// checks for the shape type, meaning it detects if there is a shape
-// inside another shape, and if true, changes the type of the outside shape
-// to an image or text div
 void checkShapeType() {
-	double xrange1, xrange2, yrange1, yrange2;
-	int count = 0;
-	for (int i = 0; i < myShapes.size(); i++) {
-		if (myShapes[i].type == 'r') {
-			myShapes[i].pointSortX();
-			xrange1 = myShapes[i].points[0].x;
-			xrange2 = myShapes[i].points[3].x;
-			myShapes[i].pointSortY();
-			yrange1 = myShapes[i].points[0].y;
-			yrange2 = myShapes[i].points[3].y;
-			for (int j = 0; j < myShapes.size(); j++) {
-				if (myShapes[j].type == 't') {
-					for (int y = 0; y < 3; y++) {
-						if (myShapes[j].points[y].x < xrange2 && myShapes[j].points[y].x > xrange1 && myShapes[j].points[y].y < yrange2 && myShapes[j].points[y].y > yrange1)
-							count += 1;
-					}
-					if (count == 3) {
-						myShapes[i].type = 'T'; // big T indicating its a text object						
-						count = 0; // reset variables
-						myShapes.erase(myShapes.begin() + j); // erase useless shape
-						i -= 1; // reset i since myShapes is now smaller in size
-						j -= 1; // reset j since myShapes is now smaller in size
-						break; // break out of for loop
-					}
-				}
-				else if (myShapes[j].type == 'c') {
-					for (int y = 0; y < myShapes[j].size; y++) {
-						if (myShapes[j].points[y].x < xrange2 && myShapes[j].points[y].x > xrange1 && myShapes[j].points[y].y < yrange2 && myShapes[j].points[y].y > yrange1)
-							count += 1;
-					}
-					if (count == myShapes[j].size) {
-						myShapes[i].type = 'I'; // big I indicating its an image
-						count = 0; // reset variables
-						myShapes.erase(myShapes.begin() + j); // erase useless shape
-						i -= 1; // reset i since myShapes is now smaller in size
-						j -= 1; // reset j since myShapes is now smaller in size
-						break; // break out of for loop
-					}
-				}
-			}
-		}
-	}
+        double xrange1, xrange2, yrange1, yrange2;
+        int count = 0;
+        for (int i = 0; i < myShapes.size(); i++) {
+                if (myShapes[i].type == 'r') {
+                        myShapes[i].pointSortX();
+                        xrange1 = myShapes[i].points[0].x;
+                        xrange2 = myShapes[i].points[3].x;
+                        myShapes[i].pointSortY();
+                        yrange1 = myShapes[i].points[0].y;
+                        yrange2 = myShapes[i].points[3].y;
+                        for (int j = 0; j < myShapes.size(); j++) {
+                                if (myShapes[j].type == 't') {
+                                        for (int y = 0; y < 3; y++) {
+                                                if (myShapes[j].points[y].x < xrange2 && myShapes[j].points[y].x > xrange1 && myShapes[j].points[y].y < yrange2 && myShapes[j].points[y].y > yrange1)
+                                                        count += 1;
+                                        }
+                                        if (count == 3) {
+                                                myShapes[i].type = 'T'; // big T indicating its a text object                                                
+                                                count = 0; // reset variables
+                                                myShapes.erase(myShapes.begin() + j); // erase useless shape
+                                                i -= 1; // reset i since myShapes is now smaller in size
+                                                j -= 1; // reset j since myShapes is now smaller in size
+                                                break; // break out of for loop
+                                        }
+                                }
+                                else if (myShapes[j].type == 'c' && myShapes[j].size>10 ) {
+                                        for (int y = 0; y < myShapes[j].size; y++) {
+                                                if (myShapes[j].points[y].x < xrange2 && myShapes[j].points[y].x > xrange1 && myShapes[j].points[y].y < yrange2 && myShapes[j].points[y].y > yrange1)
+                                                        count += 1;
+                                        }
+                                        if (count == myShapes[j].size) {
+                                                myShapes[i].type = 'I'; // big I indicating its an image
+                                                count = 0; // reset variables
+                                                myShapes.erase(myShapes.begin() + j); // erase useless shape
+                                                i -= 1; // reset i since myShapes is now smaller in size
+                                                j -= 1; // reset j since myShapes is now smaller in size
+                                                break; // break out of for loop
+                                        }
+                                }
+                        }
+                }
+        }
 }
-
 void writeHTML(string html){
 
 
@@ -128,6 +121,18 @@ string createHead(){
 
 	string head = "<html>\n";
 	head += "\t<head>\n";
+	head += "<style type=\"text/css\">\n";
+	head += "\tbody{\n";
+	head += "\t\tmargin:auto;\n";
+	head += "\t\twidth:"+std::to_string(MAX_PAGE_WIDTH)+"px;\n";
+	head += "\t}\n";
+	head += "\ttable{\n";
+	head += "\t\tmargin: 0 auto;\n";
+	head += "\t}\n";
+	head += "\timg{\n";
+	head += "\t\tdisplay:block;\n";
+	head += "\t\tmargin: 0 auto;\n";
+	head += "\t}\n</style>\n";
 	head += "\t</head>\n";
 	head += "\t<body>\n";
 	return head;
@@ -138,44 +143,95 @@ string createEnd(){
 	end += "<html>\n";
 	return end;
 }
-string createBody(Div div,int divType,string body,int tabLevel){
+string createBody(Div div,int divOrientation,string body,int tabLevel){
 
 	string tabs;
+	char info[200];
 	for(int i=0;i<tabLevel;i++)
 		tabs+="\t";
-
-	if( divType == HORIZONTAL ){
-
-		char info[100];
-		sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
-		body += tabs+"<div "+string(info)+">\n";
-		if( div.children.size() == 0 ){
-			body += tabs+"\t<p>\n"+tabs+"\t\t"+dummyText+"\n"+tabs+"\t</p>\n";
+				
+	if( div.children.size()>0 ){
+		if( divOrientation == Div::HORIZONTAL ){
+			sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
+		}else{
+			sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
 		}
-	}
-	else{
-
-		char info[100];
-		sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
 		body += tabs+"<div "+string(info)+">\n";
-		if( div.children.size() == 0 ){
-			body += tabs+"\t<p>\n"+tabs+"\t\t"+dummyText+"\n"+tabs+"\t</p>\n";
+		for( int i=0; i < div.children.size(); i++ ){
+			body = createBody(div.children[i],div.divOrientation,body,tabLevel+1);
 		}
-
+		body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\n";
+		return body;
 	}
-	for( int i=0; i < div.children.size(); i++ ){
-			body = createBody(div.children[i],div.divType,body,tabLevel+1);
+	else if( div.children.size() == 0 ){
+		
+		if( div.divContent == Div::TEXT ){
+			if( divOrientation == Div::HORIZONTAL ){
+				sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
+			}else{
+				sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
+			}
+			body += tabs+"<div "+string(info)+">\n";
+			body += tabs+"\t<p>\n"+tabs+"\t\t"+dummyText+"\n"+tabs+"\t</p>\n";
+			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\n";
+			return body;
+		}
+		if( div.divContent == Div::IMAGE ){
+			if( divOrientation == Div::HORIZONTAL ){
+				body += tabs+"<div style=\"float:left\">\n";
+			}else{
+				body += tabs+"<div>\n";
+			}
+			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width);
+			body += tabs+"\t<div "+string(info)+">\n";
+			body += tabs+"\t\t<img src=\""+dummy_image+"\"/>\n";
+			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\n";
+			body += tabs+"</div>\n";
+			return body;
+		}
+		if( div.divContent == Div::TABLE ){
+			if( divOrientation == Div::HORIZONTAL ){
+				body += tabs+"<div style=\"float:left\">\n";
+			}else{
+				body += tabs+"<div>\n";
+			}
+			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width);
+			body += tabs+"\t<div "+string(info)+">\n";
+			body += tabs+"\t\t<table>\n";
+				body += tabs+"\t\t\t<tr>\n";
+					body += tabs+"\t\t\t<td>1</td>\n";
+					body += tabs+"\t\t\t<td>2</td>\n";
+					body += tabs+"\t\t\t<td>3</td>\n";
+				body += tabs+"\t\t\t</tr>\n";
+				body += tabs+"\t\t\t<tr>\n";
+					body += tabs+"\t\t\t<td>4</td>\n";
+					body += tabs+"\t\t\t<td>5</td>\n";
+					body += tabs+"\t\t\t<td>6</td>\n";
+				body += tabs+"\t\t\t</tr>\n";
+				body += tabs+"\t\t\t<tr>\n";
+					body += tabs+"\t\t\t<td>7</td>\n";
+					body += tabs+"\t\t\t<td>8</td>\n";
+					body += tabs+"\t\t\t<td>9</td>\n";
+				body += tabs+"\t\t\t</tr>\n";
+				body += tabs+"\t\t\t<tr>\n";
+					body += tabs+"\t\t\t<td>10</td>\n";
+					body += tabs+"\t\t\t<td>11</td>\n";
+					body += tabs+"\t\t\t<td>12</td>\n";
+				body += tabs+"\t\t\t</tr>\n";
+			body += tabs+"\t\t</table>\n";
+			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\n";
+			body += tabs+"</div>\n";
+			return body;
+		}
 	}
 	
-	body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\n";
-	return body;
 }
 string createHTML(Div mainDiv){
 
 	string head = createHead();
 	string end = createEnd();
 	string body = "";
-	body = createBody(mainDiv,mainDiv.divType,body,2);
+	body = createBody(mainDiv,mainDiv.divOrientation,body,2);
 
 	string html = head + body + end;
 
@@ -187,7 +243,7 @@ void resizeAllDivs(Div &div,int width){
 	div.width = width;
 	if( div.children.size() > 0 ){
 
-		if( div.divType==VERTICAL ){
+		if( div.divOrientation == Div::VERTICAL ){
 
 			for(int i = 0; i < div.children.size(); i++){
 
@@ -224,7 +280,8 @@ bool compareDivsV(const Div &a, const Div &b){
 }
 Div createNewDiv(vector<Div> divList, bool horizontal){
 
-	int minRow = -1, minCol = -1, maxCol = -1, maxRow = -1, maxW, maxH, divType;
+	int minRow = -1, minCol = -1, maxCol = -1, maxRow = -1, maxW, maxH;
+	Div::DivOrientation divOrientation;
 
 	cout << "Creating new div from these divs " << endl;
 	printDivs(divList);
@@ -247,11 +304,11 @@ Div createNewDiv(vector<Div> divList, bool horizontal){
 	}
 	if (horizontal){
 		sort(divList.begin(), divList.end(), compareDivsH);
-		divType = HORIZONTAL;
+		divOrientation = Div::HORIZONTAL;
 	}
 	else{
 		sort(divList.begin(), divList.end(), compareDivsV);
-		divType = VERTICAL;
+		divOrientation = Div::VERTICAL;
 	}
 	maxW = maxCol - minCol;
 	maxH = maxRow - minRow;
@@ -262,7 +319,7 @@ Div createNewDiv(vector<Div> divList, bool horizontal){
 	cout << "max col: " << maxRow << endl;
 	cout << " maxW: " << maxW << endl;
 	cout << " maxH: " << maxH << endl;
-	Div div = Div(minRow, minCol, maxW, maxH, divList, divType, divId);
+	Div div = Div(minRow, minCol, maxW, maxH, divList, divOrientation, divId);
 	divId += 1;
 	cout << "Created this div " << div.printDiv() << endl;
 	return div;
@@ -367,8 +424,6 @@ Div setupHierarchy(vector<Div> divs, int count){
 
 	if( count == 10 )
 		return divs[0];
-	if (divs.size() == 0)
-		return Div();
 
 	if (divs.size() > 1){
 		for (unsigned int i = 0; i<divs.size(); i++){
@@ -392,7 +447,28 @@ Div setupHierarchy(vector<Div> divs, int count){
 		return divs[0];
 	}
 }
+vector<Div> removeDupDivs(vector<Div> divs){
 
+	bool matched;
+	vector<Div> nonDup;
+
+	for(unsigned int i=0;i<divs.size();i++){
+		matched=false;
+		for(unsigned int j=0;j<nonDup.size();j++){
+
+			if( !divs[i].match(nonDup[j]) ){
+
+				if( divs[i].similar(nonDup[j])){
+
+					matched = true;
+				}
+			}
+		}
+		if( !matched )
+			nonDup.push_back(Div(divs[i]));
+	}
+	return nonDup;
+}
 //remove duplicates and setup hierarchy
 Div setUpDivs(){
 	vector<Div> tempDiv;
@@ -408,6 +484,7 @@ Div setUpDivs(){
 				tempDiv.push_back(newDiv);
 			}
 		}
+		tempDiv = removeDupDivs(tempDiv);
 		printDivs(tempDiv);
 		cout<<"setup hierarchy"<<endl;
 		mainDiv = setupHierarchy(tempDiv, 0);
@@ -511,18 +588,24 @@ int main(int argc, char** argv) {
 	cout << " - 2 for shapes6.png"<<endl;
 	cout << " - 3 for test.png'"<<endl;
 	cout << " - 4 for test2.png'"<<endl;
+	cout << " - 5 for htmlPhoto1.png'"<<endl;
+	cout << " - 6 for shapes7.png'"<<endl;
+	cout << " - 7 for shapes8.png'"<<endl;
 
 	int choice = getchar()-'0';
 
-	string file;
+	string file = "HTML Drawings/";
 
 	switch( choice ){
 
-		case 1:{file="rects2.png";break;}
-		case 2:{file="shapes6.png";break;}
-		case 3:{file="test.png";break;}
-		case 4:{file="test2.png";break;}
-		default:{file="test.png";break;}
+		case 1:{file+="rects2.png";break;}
+		case 2:{file+="shapes6.png";break;}
+		case 3:{file+="test.png";break;}
+		case 4:{file+="test2.png";break;}
+		case 5:{file+="htmlPhoto1.png";break;}
+		case 6:{file+="shapes7.png";break;}
+		case 7:{file+="shapes8.png";break;}
+		default:{file+="test.png";break;}
 	}
 	
 	Mat img, gray;

@@ -11,15 +11,20 @@ using namespace cv;
 
 class Div {
 public:
+
+	enum InnerDivContent{TEXT,IMAGE,TABLE};
+	enum DivOrientation{HORIZONTAL,VERTICAL,NONE};
 	int row;
 	int col;
 	int id;
 	int width;
 	int height;
-	int divType;
+	DivOrientation divOrientation;
 	vector<Div> children;
+	InnerDivContent divContent;
+
 	Div();
-	Div(int row, int col, int width, int height, vector<Div>children, int divType, int divID);
+	Div(int row, int col, int width, int height, vector<Div>children, DivOrientation divOrientation, int divID);
 	Div(Div *div);
 	Div(myShape * ms);
 	void setId(int divID);
