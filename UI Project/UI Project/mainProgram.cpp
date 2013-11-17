@@ -11,6 +11,7 @@ vector<myShape> deletedShapes; // second vector hold deleted shapes, so you can 
 string dummyText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse volutpat ipsum sed feugiat facilisis. In auctor nulla vitae velit cursus, volutpat vulputate massa volutpat. Nullam ornare, purus et consectetur suscipit, felis velit lacinia nulla, vitae ornare felis erat vel augue. Donec sed tempor urna. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Cras interdum justo et faucibus malesuada. Ut ut eros magna.\
 		Pellentesque ac nibh ut est porttitor lobortis. In nec justo sed metus convallis aliquet faucibus eu ante. Aenean tristique, felis quis lobortis volutpat, neque enim bibendum orci, eu fermentum nunc ligula nec est. In at sagittis felis. Cras sit amet justo ac orci viverra porta. Maecenas lobortis semper dolor quis tempus. Duis in tincidunt lectus. Donec vitae orci dolor. Aliquam pellentesque, mauris id iaculis suscipit, mi lacus elementum nisl, vitae feugiat velit lectus vitae nibh. Interdum et malesuada fames ac ante ipsum primis in faucibus. Proin hendrerit diam et eleifend laoreet. Nam turpis sapien, sollicitudin non consectetur eu, ornare at justo. Quisque arcu enim, sollicitudin vitae tortor nec, eleifend ornare turpis. Vestibulum ultricies tempor nunc at gravida. Vestibulum non dictum odio.";
 string dummy_image = "Sample Pictures/Desert.jpg";
+const int PADDING=5;
 
 //non member functions 
 //check to make sure there are no duplicates in the shapesvector.
@@ -116,28 +117,31 @@ void writeHTML(string html){
 }
 string createHead(){
 
-	string head = "<html>\n";
-	head += "\t<head>\n";
-	head += "<style type=\"text/css\">\n";
-	head += "\tbody{\n";
-	head += "\t\tmargin:auto;\n";
-	head += "\t\twidth:"+std::to_string(MAX_PAGE_WIDTH)+"px;\n";
-	head += "\t}\n";
-	head += "\ttable{\n";
-	head += "\t\tmargin: 0 auto;\n";
-	head += "\t}\n";
-	head += "\timg{\n";
-	head += "\t\tdisplay:block;\n";
-	head += "\t\tmargin: 0 auto;\n";
-	head += "\t}\n</style>\n";
-	head += "\t</head>\n";
-	head += "\t<body>\n";
+
+	string head = "<html>\r\n";
+	head += "\t<head>\r\n";
+	head += "\t\t<link rel=\"stylesheet\" href=\"css/bootstrap.css\"  type=\"text/css\"/>\r\n";
+	head += "\t<style type=\"text/css\">\r\n";
+	head += "\t\ttable{\r\n";
+	head += "\t\t\tmargin: 0 auto;\r\n";
+	head += "\t\t}\r\n";
+	head += "\t\tdiv{\r\n";
+	head += "\t\t\tpadding:"+std::to_string(PADDING)+"px";
+	head += "\t\t}\r\n";
+	head += "\t\timg{\r\n";
+	head += "\t\t\tdisplay:block;\r\n";
+	head += "\t\t\tmargin: 0 auto;\r\n";
+	head += "\t\t}\r\n</style>\r\n";
+	head += "\t</head>\r\n";
+	head += "\t<body>\r\n";
+	head += "\t\t<script src=\"http://code.jquery.com/jquery-1.10.1.min.js\"></script>\r\n";
+	head += "\t\t<script src=\"js/bootstrap.js\"></script>\r\n";
 	return head;
 }
 string createEnd(){
 
-	string end = "\t</body>\n";
-	end += "<html>\n";
+	string end = "\t</body>\r\n";
+	end += "<html>\r\n";
 	return end;
 }
 string createBody(Div div,int divOrientation,string body,int tabLevel){
@@ -148,16 +152,19 @@ string createBody(Div div,int divOrientation,string body,int tabLevel){
 		tabs+="\t";
 				
 	if( div.children.size()>0 ){
-		if( divOrientation == Div::HORIZONTAL ){
+		if( divOrientation == Div::HORIZONTAL && tabLevel != 2){//tabLevel=2 means first div we don't need to float left
 			sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
 		}else{
-			sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
+			if( tabLevel==2 )//outermost div
+				sprintf(info,"id=\"%d\" class=\"container\" style=\"width:%dpx;\"",div.id,div.width);
+			else
+				sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
 		}
-		body += tabs+"<div "+string(info)+">\n";
+		body += tabs+"<div "+string(info)+">\r\n";
 		for( int i=0; i < div.children.size(); i++ ){
 			body = createBody(div.children[i],div.divOrientation,body,tabLevel+1);
 		}
-		body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\n";
+		body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 		return body;
 	}
 	else if( div.children.size() == 0 ){
@@ -168,22 +175,22 @@ string createBody(Div div,int divOrientation,string body,int tabLevel){
 			}else{
 				sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
 			}
-			body += tabs+"<div "+string(info)+">\n";
-			body += tabs+"\t<p>\n"+tabs+"\t\t"+dummyText+"\n"+tabs+"\t</p>\n";
-			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\n";
+			body += tabs+"<div "+string(info)+">\r\n";
+			body += tabs+"\t<p>\r\n"+tabs+"\t\t"+dummyText+"\r\n"+tabs+"\t</p>\r\n";
+			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 			return body;
 		}
 		if( div.divContent == Div::IMAGE ){
 			if( divOrientation == Div::HORIZONTAL ){
-				body += tabs+"<div style=\"float:left\">\n";
+				body += tabs+"<div style=\"float:left\">\r\n";
 			}else{
-				body += tabs+"<div>\n";
+				body += tabs+"<div>\r\n";
 			}
-			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width);
-			body += tabs+"\t<div "+string(info)+">\n";
-			body += tabs+"\t\t<img src=\""+dummy_image+"\"/>\n";
-			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\n";
-			body += tabs+"</div>\n";
+			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING);
+			body += tabs+"\t<div "+string(info)+">\r\n";
+			body += tabs+"\t\t<img src=\""+dummy_image+"\"/>\r\n";
+			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
+			body += tabs+"</div>\r\n";
 			return body;
 		}
 		if( div.divContent == Div::LINKS ){
@@ -192,53 +199,53 @@ string createBody(Div div,int divOrientation,string body,int tabLevel){
 			}else{
 				sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
 			}
-			body += tabs+"<div "+string(info)+">\n";
-			body += tabs+"\t<ul>\n";
-				body += tabs+"\t\t<li><a href=\"www.google.com\"/>Google</a></li>\n";
-				body += tabs+"\t\t<li><a href=\"www.yahoo.com\"/>Yahoo</a></li>\n";
-				body += tabs+"\t\t<li><a href=\"www.bing.com\"/>Bing</a></li>\n";
-				body += tabs+"\t\t<li>\n";
-					body += tabs+"\t\t\t<ul>\n";
-						body += tabs+"\t\t\t\t<li><a href=\"www.cnn.com\"/>CNN</a></li>\n";
-						body += tabs+"\t\t\t\t<li><a href=\"www.nytimes.com\"/>New York Times</a></li>\n";
-					body += tabs+"\t\t\t</ul>\n";
-				body += tabs+"\t\t</li>\n";
-			body += tabs+"\t</ul>\n";
-			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\n";
+			body += tabs+"<div "+string(info)+">\r\n";
+			body += tabs+"\t<ul>\r\n";
+				body += tabs+"\t\t<li><a href=\"www.google.com\"/>Google</a></li>\r\n";
+				body += tabs+"\t\t<li><a href=\"www.yahoo.com\"/>Yahoo</a></li>\r\n";
+				body += tabs+"\t\t<li><a href=\"www.bing.com\"/>Bing</a></li>\r\n";
+				body += tabs+"\t\t<li>\r\n";
+					body += tabs+"\t\t\t<ul>\r\n";
+						body += tabs+"\t\t\t\t<li><a href=\"www.cnn.com\"/>CNN</a></li>\r\n";
+						body += tabs+"\t\t\t\t<li><a href=\"www.nytimes.com\"/>New York Times</a></li>\r\n";
+					body += tabs+"\t\t\t</ul>\r\n";
+				body += tabs+"\t\t</li>\r\n";
+			body += tabs+"\t</ul>\r\n";
+			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 			return body;
 		}
 		if( div.divContent == Div::TABLE ){
 			if( divOrientation == Div::HORIZONTAL ){
-				body += tabs+"<div style=\"float:left\">\n";
+				body += tabs+"<div style=\"float:left\">\r\n";
 			}else{
-				body += tabs+"<div>\n";
+				body += tabs+"<div>\r\n";
 			}
-			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width);
-			body += tabs+"\t<div "+string(info)+">\n";
-			body += tabs+"\t\t<table>\n";
-				body += tabs+"\t\t\t<tr>\n";
-					body += tabs+"\t\t\t<td>1</td>\n";
-					body += tabs+"\t\t\t<td>2</td>\n";
-					body += tabs+"\t\t\t<td>3</td>\n";
-				body += tabs+"\t\t\t</tr>\n";
-				body += tabs+"\t\t\t<tr>\n";
-					body += tabs+"\t\t\t<td>4</td>\n";
-					body += tabs+"\t\t\t<td>5</td>\n";
-					body += tabs+"\t\t\t<td>6</td>\n";
-				body += tabs+"\t\t\t</tr>\n";
-				body += tabs+"\t\t\t<tr>\n";
-					body += tabs+"\t\t\t<td>7</td>\n";
-					body += tabs+"\t\t\t<td>8</td>\n";
-					body += tabs+"\t\t\t<td>9</td>\n";
-				body += tabs+"\t\t\t</tr>\n";
-				body += tabs+"\t\t\t<tr>\n";
-					body += tabs+"\t\t\t<td>10</td>\n";
-					body += tabs+"\t\t\t<td>11</td>\n";
-					body += tabs+"\t\t\t<td>12</td>\n";
-				body += tabs+"\t\t\t</tr>\n";
-			body += tabs+"\t\t</table>\n";
-			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\n";
-			body += tabs+"</div>\n";
+			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING);
+			body += tabs+"\t<div "+string(info)+">\r\n";
+			body += tabs+"\t\t<table>\r\n";
+				body += tabs+"\t\t\t<tr>\r\n";
+					body += tabs+"\t\t\t<td>1</td>\r\n";
+					body += tabs+"\t\t\t<td>2</td>\r\n";
+					body += tabs+"\t\t\t<td>3</td>\r\n";
+				body += tabs+"\t\t\t</tr>\r\n";
+				body += tabs+"\t\t\t<tr>\r\n";
+					body += tabs+"\t\t\t<td>4</td>\r\n";
+					body += tabs+"\t\t\t<td>5</td>\r\n";
+					body += tabs+"\t\t\t<td>6</td>\r\n";
+				body += tabs+"\t\t\t</tr>\r\n";
+				body += tabs+"\t\t\t<tr>\r\n";
+					body += tabs+"\t\t\t<td>7</td>\r\n";
+					body += tabs+"\t\t\t<td>8</td>\r\n";
+					body += tabs+"\t\t\t<td>9</td>\r\n";
+				body += tabs+"\t\t\t</tr>\r\n";
+				body += tabs+"\t\t\t<tr>\r\n";
+					body += tabs+"\t\t\t<td>10</td>\r\n";
+					body += tabs+"\t\t\t<td>11</td>\r\n";
+					body += tabs+"\t\t\t<td>12</td>\r\n";
+				body += tabs+"\t\t\t</tr>\r\n";
+			body += tabs+"\t\t</table>\r\n";
+			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
+			body += tabs+"</div>\r\n";
 			return body;
 		}
 	}
@@ -259,18 +266,21 @@ void resizeAllDivs(Div &div,int width){
 
 
 	cout << "Width: "<<width<<endl;
+
 	div.width = width;
+
 	if( div.children.size() > 0 ){
 
 		if( div.divOrientation == Div::VERTICAL ){
 
 			for(int i = 0; i < div.children.size(); i++){
 
-				resizeAllDivs(div.children[i],width);
+				resizeAllDivs(div.children[i],width-2*PADDING);
 			}
 		}
 		else{
-			size_t childWidth = width/div.children.size();
+
+			size_t childWidth = width/div.children.size()-2*PADDING;
 			for (int i = 0; i < div.children.size(); i++){
 
 				resizeAllDivs(div.children[i],childWidth);
@@ -576,7 +586,7 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 		approxPolyDP(contours[i], approxShape, 0.01*arcLength(contours[i], true), true);
 		Rect rect = boundingRect( contours[i] );
 
-		if( rect.width <20 || rect.height < 20 ){
+		if( rect.width <20 && rect.height < 20 ){
 			continue;
 		}
 		if (checkShapes(approxShape)) {
@@ -586,9 +596,13 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 			Scalar color;
 			myShape newShape(approxShape);
 			newShape.pointSortX();
-			if (approxShape.size() == 4 && ( rect.width<30 || rect.height<30 )  ){
+			if ( approxShape.size() >=2 && approxShape.size()<7 && rect.width < 30  ){
 				newShape.type = 'l'; // l for line
 				color = Scalar(255, 255, 0);
+			}
+			else if( approxShape.size() >=2 && rect.height < 30 ){
+				newShape.type = 't'; // t for triangle
+				color = Scalar(0,255,0);
 			}
 			else if (approxShape.size() == 3){
 				newShape.type = 't'; // t for triangle
@@ -612,14 +626,16 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 int main(int argc, char** argv) {
 
 	cout << "Choose an image file"<<endl;
-	cout << " - 1 for rects2.png"<<endl;
-	cout << " - 2 for shapes6.png"<<endl;
-	cout << " - 3 for test.png'"<<endl;
-	cout << " - 4 for test2.png'"<<endl;
-	cout << " - 5 for htmlPhoto1.png'"<<endl;
-	cout << " - 6 for shapes7.png'"<<endl;
-	cout << " - 7 for shapes8.png'"<<endl;
-	cout << " - 8 for shapes9.png'"<<endl;
+	cout << " - 0 for rects2.png"<<endl;
+	cout << " - 1 for shapes6.png"<<endl;
+	cout << " - 2 for test.png'"<<endl;
+	cout << " - 3 for test2.png'"<<endl;
+	cout << " - 4 for htmlPhoto1.png'"<<endl;
+	cout << " - 5 for shapes7.png'"<<endl;
+	cout << " - 6 for shapes8.png'"<<endl;
+	cout << " - 7 for shapes9.png'"<<endl;
+	cout << " - 8 for shapes10.png'"<<endl;
+	cout << " - 9 for shapes11.png'"<<endl;
 
 	int choice = getchar()-'0';
 
@@ -627,14 +643,16 @@ int main(int argc, char** argv) {
 
 	switch( choice ){
 
-		case 1:{file+="rects2.png";break;}
-		case 2:{file+="shapes6.png";break;}
-		case 3:{file+="test.png";break;}
-		case 4:{file+="test2.png";break;}
-		case 5:{file+="htmlPhoto1.png";break;}
-		case 6:{file+="shapes7.png";break;}
-		case 7:{file+="shapes8.png";break;}
-		case 8:{file+="shapes9.png";break;}
+		case 0:{file+="rects2.png";break;}
+		case 1:{file+="shapes6.png";break;}
+		case 2:{file+="test.png";break;}
+		case 3:{file+="test2.png";break;}
+		case 4:{file+="htmlPhoto1.png";break;}
+		case 5:{file+="shapes7.png";break;}
+		case 6:{file+="shapes8.png";break;}
+		case 7:{file+="shapes9.png";break;}
+		case 8:{file+="shapes10.png";break;}
+		case 9:{file+="shapes11.png";break;}
 		default:{file+="test.png";break;}
 	}
 	
@@ -652,5 +670,6 @@ int main(int argc, char** argv) {
 	string html = createHTML(mainDiv);
 	writeHTML(html);
 	waitKey(0);
+	system ("start file:///C:/Users/Holly/Documents/GitHub/Python-Image-Detect/UI%20Project/UI%20Project/output.html");
 	return 0;
 }
