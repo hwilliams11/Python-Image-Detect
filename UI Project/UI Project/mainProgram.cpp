@@ -191,6 +191,27 @@ string createBody(Div div,int divOrientation,string body,int tabLevel){
 			body += tabs+"</div>\n";
 			return body;
 		}
+		if( div.divContent == Div::LINKS ){
+			if( divOrientation == Div::HORIZONTAL ){
+				sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
+			}else{
+				sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
+			}
+			body += tabs+"<div "+string(info)+">\n";
+			body += tabs+"\t<ul>\n";
+				body += tabs+"\t\t<li><a href=\"www.google.com\"/>Google</a></li>\n";
+				body += tabs+"\t\t<li><a href=\"www.yahoo.com\"/>Yahoo</a></li>\n";
+				body += tabs+"\t\t<li><a href=\"www.bing.com\"/>Bing</a></li>\n";
+				body += tabs+"\t\t<li>\n";
+					body += tabs+"\t\t\t<ul>\n";
+						body += tabs+"\t\t\t\t<li><a href=\"www.cnn.com\"/>CNN</a></li>\n";
+						body += tabs+"\t\t\t\t<li><a href=\"www.nytimes.com\"/>New York Times</a></li>\n";
+					body += tabs+"\t\t\t</ul>\n";
+				body += tabs+"\t\t</li>\n";
+			body += tabs+"\t</ul>\n";
+			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\n";
+			return body;
+		}
 		if( div.divContent == Div::TABLE ){
 			if( divOrientation == Div::HORIZONTAL ){
 				body += tabs+"<div style=\"float:left\">\n";
@@ -240,6 +261,7 @@ string createHTML(Div mainDiv){
 	return html;
 }
 void resizeAllDivs(Div &div,int width){
+
 
 	cout << "Width: "<<width<<endl;
 	div.width = width;
@@ -427,6 +449,9 @@ Div setupHierarchy(vector<Div> divs, int count){
 	if( count == 10 )
 		return divs[0];
 
+	if( divs.size() == 0 ){
+		return divs[0];
+	}
 	if (divs.size() > 1){
 		for (unsigned int i = 0; i<divs.size(); i++){
 			divs = findHorizontalMatch(i, divs);
@@ -478,6 +503,7 @@ Div setUpDivs(){
 
 	if( myShapes.size() > 0 ){
 		for (int i = 0; i < myShapes.size(); i++) {
+			Rect rect = boundingRect(myShapes[i].points);
 			if (myShapes[i].type == 'T' || myShapes[i].type == 'L' || myShapes[i].type == 'I' || myShapes[i].type == 'B'){
 				cout <<"i: "<<i<<endl;
 				Div newDiv(&myShapes[i]);
@@ -489,7 +515,8 @@ Div setUpDivs(){
 		tempDiv = removeDupDivs(tempDiv);
 		printDivs(tempDiv);
 		cout<<"setup hierarchy"<<endl;
-		mainDiv = setupHierarchy(tempDiv, 0);
+		if( tempDiv.size() > 0 )
+			mainDiv = setupHierarchy(tempDiv, 0);
 	}
 	return mainDiv;
 }
@@ -565,7 +592,7 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 			Scalar color;
 			myShape newShape(approxShape);
 			newShape.pointSortX();
-			if (approxShape.size() == 2){
+			if (approxShape.size() == 4 && ( rect.width<30 || rect.height<30 )  ){
 				newShape.type = 'l'; // l for line
 				color = Scalar(255, 255, 0);
 			}
@@ -573,11 +600,11 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 				newShape.type = 't'; // t for triangle
 				color = Scalar(0,255,0);
 			}
-			else if (approxShape.size() > 3 && approxShape.size() < 10){
+			else if (approxShape.size() == 4){
 				newShape.type = 'T'; // T for Text
 				color = Scalar(255,0,0);
 			}
-			else {// it's a circle
+			else if (approxShape.size() > 7 ){// it's a circle
 				newShape.type = 'c'; // c for circle
 				color = Scalar(0,0,255);
 			}
@@ -598,6 +625,7 @@ int main(int argc, char** argv) {
 	cout << " - 5 for htmlPhoto1.png'"<<endl;
 	cout << " - 6 for shapes7.png'"<<endl;
 	cout << " - 7 for shapes8.png'"<<endl;
+	cout << " - 8 for shapes9.png'"<<endl;
 
 	int choice = getchar()-'0';
 
@@ -612,6 +640,7 @@ int main(int argc, char** argv) {
 		case 5:{file+="htmlPhoto1.png";break;}
 		case 6:{file+="shapes7.png";break;}
 		case 7:{file+="shapes8.png";break;}
+		case 8:{file+="shapes9.png";break;}
 		default:{file+="test.png";break;}
 	}
 	

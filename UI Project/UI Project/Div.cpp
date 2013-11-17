@@ -31,9 +31,10 @@ Div::Div(myShape *ms) {
 	this->children = (vector<Div>)NULL;
 	this->divOrientation = NONE;
 	switch( ms->type ){
+		case 'B': {this->divContent = TABLE;break;}
 		case 'I': {this->divContent = IMAGE;break;}
-		case 'r': {this->divContent = TEXT;break;}
-		case 'T': {this->divContent = TABLE;break;}
+		case 'L': {this->divContent = LINKS;break;}
+		case 'T': {this->divContent = TEXT;break;}
 	}
 }
 

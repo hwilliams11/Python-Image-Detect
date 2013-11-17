@@ -12,7 +12,7 @@ using namespace cv;
 class Div {
 public:
 
-	enum InnerDivContent{TEXT,IMAGE,TABLE};
+	enum InnerDivContent{TEXT,IMAGE,TABLE,LINKS};
 	enum DivOrientation{HORIZONTAL,VERTICAL,NONE};
 	int row;
 	int col;
