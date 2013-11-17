@@ -41,18 +41,6 @@ bool checkShapes(vector<Point> shapeVector) {
 				msyrange1 = myShapes[y].points[i].y * .80;
 				msyrange2 = myShapes[y].points[i].y * 1.20;
 
-				bool myShapeInNewShape=false;
-				bool newShapeInMyShape=false;
-				/*
-				if( myShapes[y].points[i].x <= xrange2 && myShapes[y].points[i].x >= xrange1 && myShapes[y].points[i].y <= yrange2 && myShapes[y].points[i].y >= yrange1 ){
-				myShapeInNewShape = true;
-				}
-				if( shapeVector[i].x <= msxrange2 && shapeVector[i].x >= msxrange1 && shapeVector[i].y <= msyrange2 && shapeVector[i].y >= msyrange1 ){
-				newShapeInMyShape = true;
-				}
-				if ( myShapeInNewShape || newShapeInMyShape ) {
-					count += 1;
-				}*/
 				if( ( abs( myShapes[y].points[i].x-shapeVector[i].x ) < 50 ) && ( abs( myShapes[y].points[i].y-shapeVector[i].y ) < 50 ) ){
 					count+=1;
 				}
@@ -67,7 +55,7 @@ void checkShapeType() {
         double xrange1, xrange2, yrange1, yrange2;
         int count = 0;
         for (int i = 0; i < myShapes.size(); i++) {
-                if (myShapes[i].type == 'r') {
+                if (myShapes[i].type == 'T') {
                         myShapes[i].pointSortX();
                         xrange1 = myShapes[i].points[0].x;
                         xrange2 = myShapes[i].points[3].x;
@@ -75,13 +63,13 @@ void checkShapeType() {
                         yrange1 = myShapes[i].points[0].y;
                         yrange2 = myShapes[i].points[3].y;
                         for (int j = 0; j < myShapes.size(); j++) {
-                                if (myShapes[j].type == 't') {
-                                        for (int y = 0; y < 3; y++) {
+                                if (myShapes[j].type == 'l') {
+									for (int y = 0; y < myShapes[j].size; y++) {
                                                 if (myShapes[j].points[y].x < xrange2 && myShapes[j].points[y].x > xrange1 && myShapes[j].points[y].y < yrange2 && myShapes[j].points[y].y > yrange1)
                                                         count += 1;
                                         }
-                                        if (count == 3) {
-                                                myShapes[i].type = 'T'; // big T indicating its a text object                                                
+									if (count == myShapes[j].size) {
+                                                myShapes[i].type = 'L'; // big L indicating links                                                
                                                 count = 0; // reset variables
                                                 myShapes.erase(myShapes.begin() + j); // erase useless shape
                                                 i -= 1; // reset i since myShapes is now smaller in size
@@ -89,7 +77,21 @@ void checkShapeType() {
                                                 break; // break out of for loop
                                         }
                                 }
-                                else if (myShapes[j].type == 'c' && myShapes[j].size>10 ) {
+								if (myShapes[j].type == 't') {
+									for (int y = 0; y < myShapes[j].size; y++) {
+										if (myShapes[j].points[y].x < xrange2 && myShapes[j].points[y].x > xrange1 && myShapes[j].points[y].y < yrange2 && myShapes[j].points[y].y > yrange1)
+											count += 1;
+									}
+									if (count == myShapes[j].size) {
+										myShapes[i].type = 'B'; // big B indicating its a table                                               
+										count = 0; // reset variables
+										myShapes.erase(myShapes.begin() + j); // erase useless shape
+										i -= 1; // reset i since myShapes is now smaller in size
+										j -= 1; // reset j since myShapes is now smaller in size
+										break; // break out of for loop
+									}
+								}
+                                else if (myShapes[j].type == 'c') {
                                         for (int y = 0; y < myShapes[j].size; y++) {
                                                 if (myShapes[j].points[y].x < xrange2 && myShapes[j].points[y].x > xrange1 && myShapes[j].points[y].y < yrange2 && myShapes[j].points[y].y > yrange1)
                                                         count += 1;
@@ -476,7 +478,7 @@ Div setUpDivs(){
 
 	if( myShapes.size() > 0 ){
 		for (int i = 0; i < myShapes.size(); i++) {
-			if( myShapes[i].type=='r' || myShapes[i].type=='T' || myShapes[i].type=='I'){
+			if (myShapes[i].type == 'T' || myShapes[i].type == 'L' || myShapes[i].type == 'I' || myShapes[i].type == 'B'){
 				cout <<"i: "<<i<<endl;
 				Div newDiv(&myShapes[i]);
 				newDiv.setId(divId);
@@ -492,7 +494,7 @@ Div setUpDivs(){
 	return mainDiv;
 }
 
-/** @function thresh_callback */
+/*
 void doWork(Mat &img,Mat &src_gray, int, void*)
 {
 	Mat canny_output;
@@ -506,7 +508,7 @@ void doWork(Mat &img,Mat &src_gray, int, void*)
 	/// Find contours	
 	findContours(canny_output, contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 	/// Draw contours
-	Mat drawing = Mat::zeros(canny_output.size(), CV_8UC3);
+	Mat drawing = Mat::zeros(canny_output.size(), CV_8UC4);
 	for (int i = 0; i < contours.size(); i++)
 	{
 		approxPolyDP(Mat(contours[i]), approxShape, 0.01*arcLength(Mat(contours[i]), true), true);
@@ -535,9 +537,10 @@ void doWork(Mat &img,Mat &src_gray, int, void*)
 	}
 	cout << "Checking shape type"<<endl;
 	checkShapeType();
-}
+} */
+
 /** @function thresh_callback */
-void doWork2(Mat &img,Mat &src_gray, int, void*)
+void doWork2(Mat &img, Mat &src_gray, int, void*)
 {
 	Mat threshImage;
 	vector<vector<Point> > contours;
@@ -562,12 +565,16 @@ void doWork2(Mat &img,Mat &src_gray, int, void*)
 			Scalar color;
 			myShape newShape(approxShape);
 			newShape.pointSortX();
-			if (approxShape.size() == 3){
+			if (approxShape.size() == 2){
+				newShape.type = 'l'; // l for line
+				color = Scalar(255, 255, 0);
+			}
+			else if (approxShape.size() == 3){
 				newShape.type = 't'; // t for triangle
 				color = Scalar(0,255,0);
 			}
-			else if (approxShape.size() == 4){
-				newShape.type = 'r'; // r for rectangle
+			else if (approxShape.size() > 3 && approxShape.size() < 10){
+				newShape.type = 'T'; // T for Text
 				color = Scalar(255,0,0);
 			}
 			else {// it's a circle
