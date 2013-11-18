@@ -6,10 +6,12 @@ using namespace std;
 
 int divId = 0;
 const int MAX_PAGE_WIDTH = 700;
+const int MAX_PAGE_HEIGHT = 700;
 vector<myShape> myShapes; // vector to hold shapes
 vector<myShape> deletedShapes; // second vector hold deleted shapes, so you can undo the delete if you want
 string dummyText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse volutpat ipsum sed feugiat facilisis. In auctor nulla vitae velit cursus, volutpat vulputate massa volutpat. Nullam ornare, purus et consectetur suscipit, felis velit lacinia nulla, vitae ornare felis erat vel augue. Donec sed tempor urna. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Cras interdum justo et faucibus malesuada. Ut ut eros magna.\
 		Pellentesque ac nibh ut est porttitor lobortis. In nec justo sed metus convallis aliquet faucibus eu ante. Aenean tristique, felis quis lobortis volutpat, neque enim bibendum orci, eu fermentum nunc ligula nec est. In at sagittis felis. Cras sit amet justo ac orci viverra porta. Maecenas lobortis semper dolor quis tempus. Duis in tincidunt lectus. Donec vitae orci dolor. Aliquam pellentesque, mauris id iaculis suscipit, mi lacus elementum nisl, vitae feugiat velit lectus vitae nibh. Interdum et malesuada fames ac ante ipsum primis in faucibus. Proin hendrerit diam et eleifend laoreet. Nam turpis sapien, sollicitudin non consectetur eu, ornare at justo. Quisque arcu enim, sollicitudin vitae tortor nec, eleifend ornare turpis. Vestibulum ultricies tempor nunc at gravida. Vestibulum non dictum odio.";
+
 string dummy_image = "Sample Pictures/Desert.jpg";
 const int PADDING=5;
 int drawnDivWidth = 0;
@@ -117,6 +119,34 @@ void writeHTML(string html){
 	}
 	html_file.close();
 }
+string getPreparedText(int width,int height){
+
+	const int CHARWIDTH = 5;
+	const int LINEHEIGHT = 30;
+	string text = dummyText;
+	int len = text.length()*CHARWIDTH;
+	int preferredNumLines = height/LINEHEIGHT;
+	int numLinesInText = len/width;
+	
+
+	//if too short
+	while( numLinesInText < preferredNumLines - 2 ){
+		text+="\n"+dummyText;
+		len = text.length()*CHARWIDTH;
+		numLinesInText = len/width;
+	}
+	//if too long
+	if( numLinesInText > preferredNumLines ){
+
+		int linesToLose = numLinesInText-preferredNumLines;
+		int numCharsToLose = (width*linesToLose)/CHARWIDTH;
+		int end = text.length()-numCharsToLose;
+		end =  text.find('.',end-10);
+		text = text.substr(0,end+1);
+	}
+	return text;
+	
+}
 string createHead(){
 
 
@@ -178,14 +208,14 @@ string createBody(Div div,int divOrientation,string body,int tabLevel,bool float
 			
 			sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
 			body += tabs+"<div "+string(info)+">\r\n";
-			body += tabs+"\t<p>\r\n"+tabs+"\t\t"+dummyText+"\r\n"+tabs+"\t</p>\r\n";
+			body += tabs+"\t<p>\r\n"+tabs+"\t\t"+getPreparedText(div.width,div.height)+"\r\n"+tabs+"\t</p>\r\n";
 			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 			return body;
 		}
 		if( div.divContent == Div::IMAGE ){
 		
 			body += tabs+"<div style=\"float:left\">\r\n";
-			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING);
+			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:%dpx;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING,div.height);
 			body += tabs+"\t<div "+string(info)+">\r\n";
 			body += tabs+"\t\t<img src=\""+dummy_image+"\"/>\r\n";
 			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
@@ -213,7 +243,7 @@ string createBody(Div div,int divOrientation,string body,int tabLevel,bool float
 		if( div.divContent == Div::TABLE ){
 			
 			body += tabs+"<div style=\"float:left\">\r\n";
-			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING);
+			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:%dpx;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING,div.height);
 			body += tabs+"\t<div "+string(info)+">\r\n";
 			body += tabs+"\t\t<table>\r\n";
 				body += tabs+"\t\t\t<tr>\r\n";
@@ -255,6 +285,7 @@ string createHTML(Div mainDiv){
 
 	return html;
 }
+
 void getMaxWidthOfAllDivs(vector<Div> divs){
 
 	if( divs.size() > 0 ){
@@ -272,6 +303,45 @@ void getMaxWidthOfAllDivs(vector<Div> divs){
 		drawnDivWidth = maxCol - minCol;
 		divComparison = 0.125*drawnDivWidth;
 	}
+}
+void getChildHeight(vector<Div> *children, int height){
+
+	int combinedHeight = 0;
+
+	for(int i=0;i<children->size();i++){
+
+		for(int j=0;j<children->size();j++){
+
+			if( abs( (*children)[i].height - (*children)[j].height ) < divComparison ){
+
+				if( (*children)[i].height > (*children)[j].height){
+					(*children)[i].height = (*children)[j].height;
+				}else{
+					(*children)[j].height = (*children)[i].height;
+				}
+
+			}
+		}
+	}
+	
+	double *totalHeights = new double[children->size()];
+	double total=0;
+	for( int i=0;i<children->size();i++ ){
+		totalHeights[i]= ceil((double)((*children)[i].height)/(*children)[0].height);
+		cout << "totalHeights[i] " << totalHeights[i] <<endl;
+		total += totalHeights[i];
+	}
+	double divVal = height/total;
+	
+	for(int i=0;i<children->size();i++){
+
+		(*children)[i].height = totalHeights[i]*divVal;
+		combinedHeight += (*children)[i].height;
+	}
+	if( combinedHeight!= height ){
+		(*children)[ children->size()-1 ].height += (height-combinedHeight);
+	}
+	delete [] totalHeights;
 }
 void getChildWidth(vector<Div> *children, int width){
 
@@ -312,20 +382,32 @@ void getChildWidth(vector<Div> *children, int width){
 	}
 	delete [] totalWidths;
 }
-void resizeAllDivs(Div &div,int width){
+void resizeAllDivs(Div &div,int width,int height){
 
 
 	cout << "Width: "<<width<<endl;
 
 	div.width = width;
+	div.height = height;
 
 	if( div.children.size() > 0 ){
 
 		if( div.divOrientation == Div::VERTICAL ){
 
+			getChildHeight( &div.children , height );
 			for(int i = 0; i < div.children.size(); i++){
+				int childHeight = div.children[i].height-2*PADDING;
+				resizeAllDivs(div.children[i],width-2*PADDING,childHeight);
+			}
+			//set width to be maximum child's width;
+			int maxWidth = div.children[0].width;
 
-				resizeAllDivs(div.children[i],width-2*PADDING);
+			for(int i=1;i<div.children.size();i++){
+				if( div.children[i].width > maxWidth )
+					maxWidth = div.children[i].width;
+			}
+			for(int i=0;i<div.children.size();i++){
+				div.children[i].width = maxWidth;
 			}
 		}
 		else{
@@ -333,9 +415,18 @@ void resizeAllDivs(Div &div,int width){
 			getChildWidth( &div.children , width );
 			for (int i = 0; i < div.children.size(); i++){
 				int childWidth = div.children[i].width-2*PADDING;
-				resizeAllDivs( div.children[i],childWidth);
+				resizeAllDivs( div.children[i],childWidth,height-2*PADDING);
 			}
-			
+			//set height to be maximum child's height
+			int maxHeight = div.children[0].height;
+
+			for(int i=1;i<div.children.size();i++){
+				if( div.children[i].height > maxHeight )
+					maxHeight = div.children[i].height;
+			}
+			for(int i=0;i<div.children.size();i++){
+				div.children[i].height = maxHeight;
+			}
 		}
 	}
 }
@@ -352,7 +443,7 @@ void resizeAllDivs2(Div &div,int width){
 
 			for(int i = 0; i < div.children.size(); i++){
 
-				resizeAllDivs(div.children[i],width-2*PADDING);
+				resizeAllDivs2(div.children[i],width-2*PADDING);
 			}
 		}
 		else{
@@ -442,8 +533,8 @@ vector<Div> findHorizontalMatch(int divIndex, vector<Div>divs){
 		Div div2 = divs[i];
 		if (!div1.match(div2)){
 
-			if (abs(div1.row - div2.row) < 80 &&
-				abs(div1.height - div2.height)<80){
+			if (abs(div1.row - div2.row) < 20+divComparison &&
+				abs(div1.height - div2.height) < 20+divComparison){
 				divListIndex.push_back(i);
 			}
 		}
@@ -489,8 +580,8 @@ vector<Div> findVerticalMatch(int divIndex, vector<Div>divs){
 		Div div2 = divs[i];
 		if (!div1.match(div2)){
 
-			if (abs(div1.col - div2.col) < 80 &&
-				abs(div1.width - div2.width)<80){
+			if (abs(div1.col - div2.col) < 20+divComparison &&
+				abs(div1.width - div2.width) < 20+divComparison){
 				divListIndex.push_back(i);
 			}
 		}
@@ -749,7 +840,7 @@ int main(int argc, char** argv) {
 	Div mainDiv = setUpDivs();
 	imshow("Main image", img);
 	cout << "printing hierarchy" << mainDiv.children.size() << endl;
-	resizeAllDivs(mainDiv,MAX_PAGE_WIDTH);
+	resizeAllDivs(mainDiv,MAX_PAGE_WIDTH,MAX_PAGE_HEIGHT);
 	mainDiv.printDivWithChildren(0);
 	string html = createHTML(mainDiv);
 	writeHTML(html);
