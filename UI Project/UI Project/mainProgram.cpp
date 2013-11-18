@@ -12,6 +12,8 @@ string dummyText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sus
 		Pellentesque ac nibh ut est porttitor lobortis. In nec justo sed metus convallis aliquet faucibus eu ante. Aenean tristique, felis quis lobortis volutpat, neque enim bibendum orci, eu fermentum nunc ligula nec est. In at sagittis felis. Cras sit amet justo ac orci viverra porta. Maecenas lobortis semper dolor quis tempus. Duis in tincidunt lectus. Donec vitae orci dolor. Aliquam pellentesque, mauris id iaculis suscipit, mi lacus elementum nisl, vitae feugiat velit lectus vitae nibh. Interdum et malesuada fames ac ante ipsum primis in faucibus. Proin hendrerit diam et eleifend laoreet. Nam turpis sapien, sollicitudin non consectetur eu, ornare at justo. Quisque arcu enim, sollicitudin vitae tortor nec, eleifend ornare turpis. Vestibulum ultricies tempor nunc at gravida. Vestibulum non dictum odio.";
 string dummy_image = "Sample Pictures/Desert.jpg";
 const int PADDING=5;
+int drawnDivWidth = 0;
+int divComparison = 0;
 
 //non member functions 
 //check to make sure there are no duplicates in the shapesvector.
@@ -144,25 +146,28 @@ string createEnd(){
 	end += "<html>\r\n";
 	return end;
 }
-string createBody(Div div,int divOrientation,string body,int tabLevel){
+string createBody(Div div,int divOrientation,string body,int tabLevel,bool floatLeft){
 
 	string tabs;
 	char info[200];
+	bool left=false;
 	for(int i=0;i<tabLevel;i++)
 		tabs+="\t";
 				
+	left = true;
+
 	if( div.children.size()>0 ){
-		if( divOrientation == Div::HORIZONTAL && tabLevel != 2){//tabLevel=2 means first div we don't need to float left
-			sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
+		if( divOrientation == Div::HORIZONTAL && tabLevel != 2){
+			sprintf(info,"id=\"%d\" class=\"container\" style=\"float:left;width:%dpx;\"",div.id,div.width);
 		}else{
 			if( tabLevel==2 )//outermost div
 				sprintf(info,"id=\"%d\" class=\"container\" style=\"width:%dpx;\"",div.id,div.width);
 			else
-				sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
+				sprintf(info,"id=\"%d\" style=\"width:%dpx;float:left\"",div.id,div.width);
 		}
 		body += tabs+"<div "+string(info)+">\r\n";
 		for( int i=0; i < div.children.size(); i++ ){
-			body = createBody(div.children[i],div.divOrientation,body,tabLevel+1);
+			body = createBody(div.children[i],div.divOrientation,body,tabLevel+1,left);
 		}
 		body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 		return body;
@@ -170,22 +175,16 @@ string createBody(Div div,int divOrientation,string body,int tabLevel){
 	else if( div.children.size() == 0 ){
 		
 		if( div.divContent == Div::TEXT ){
-			if( divOrientation == Div::HORIZONTAL ){
-				sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
-			}else{
-				sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
-			}
+			
+			sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
 			body += tabs+"<div "+string(info)+">\r\n";
 			body += tabs+"\t<p>\r\n"+tabs+"\t\t"+dummyText+"\r\n"+tabs+"\t</p>\r\n";
 			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 			return body;
 		}
 		if( div.divContent == Div::IMAGE ){
-			if( divOrientation == Div::HORIZONTAL ){
-				body += tabs+"<div style=\"float:left\">\r\n";
-			}else{
-				body += tabs+"<div>\r\n";
-			}
+		
+			body += tabs+"<div style=\"float:left\">\r\n";
 			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING);
 			body += tabs+"\t<div "+string(info)+">\r\n";
 			body += tabs+"\t\t<img src=\""+dummy_image+"\"/>\r\n";
@@ -194,11 +193,8 @@ string createBody(Div div,int divOrientation,string body,int tabLevel){
 			return body;
 		}
 		if( div.divContent == Div::LINKS ){
-			if( divOrientation == Div::HORIZONTAL ){
-				sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
-			}else{
-				sprintf(info,"id=\"%d\" style=\"width:%dpx;\"",div.id,div.width);
-			}
+			
+			sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
 			body += tabs+"<div "+string(info)+">\r\n";
 			body += tabs+"\t<ul>\r\n";
 				body += tabs+"\t\t<li><a href=\"www.google.com\"/>Google</a></li>\r\n";
@@ -215,11 +211,8 @@ string createBody(Div div,int divOrientation,string body,int tabLevel){
 			return body;
 		}
 		if( div.divContent == Div::TABLE ){
-			if( divOrientation == Div::HORIZONTAL ){
-				body += tabs+"<div style=\"float:left\">\r\n";
-			}else{
-				body += tabs+"<div>\r\n";
-			}
+			
+			body += tabs+"<div style=\"float:left\">\r\n";
 			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:400px;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING);
 			body += tabs+"\t<div "+string(info)+">\r\n";
 			body += tabs+"\t\t<table>\r\n";
@@ -256,11 +249,68 @@ string createHTML(Div mainDiv){
 	string head = createHead();
 	string end = createEnd();
 	string body = "";
-	body = createBody(mainDiv,mainDiv.divOrientation,body,2);
+	body = createBody(mainDiv,mainDiv.divOrientation,body,2,false);
 
 	string html = head + body + end;
 
 	return html;
+}
+void getMaxWidthOfAllDivs(vector<Div> divs){
+
+	if( divs.size() > 0 ){
+
+		int minCol = divs[0].col;
+		int maxCol = divs[0].col+divs[0].width;
+
+		for( int i=1;i<divs.size();i++ ){
+
+			if( divs[i].col < minCol )
+				minCol = divs[i].col;
+			if( divs[i].col+divs[i].width > maxCol )
+				maxCol = divs[i].col+divs[i].width;
+		}
+		drawnDivWidth = maxCol - minCol;
+		divComparison = 0.125*drawnDivWidth;
+	}
+}
+void getChildWidth(vector<Div> *children, int width){
+
+	int combinedWidth = 0;
+
+	for(int i=0;i<children->size();i++){
+
+		for(int j=0;j<children->size();j++){
+
+			if( abs( (*children)[i].width - (*children)[j].width ) < divComparison ){
+
+				if( (*children)[i].width > (*children)[j].width){
+					(*children)[i].width = (*children)[j].width;
+				}else{
+					(*children)[j].width = (*children)[i].width;
+				}
+
+			}
+		}
+	}
+	
+	double *totalWidths = new double[children->size()];
+	double total=0;
+	for( int i=0;i<children->size();i++ ){
+		totalWidths[i]= ceil((double)((*children)[i].width)/(*children)[0].width);
+		cout << "totalWidths[i] " << totalWidths[i] <<endl;
+		total += totalWidths[i];
+	}
+	double divVal = width/total;
+	
+	for(int i=0;i<children->size();i++){
+
+		(*children)[i].width = totalWidths[i]*divVal;
+		combinedWidth += (*children)[i].width;
+	}
+	if( combinedWidth!= width ){
+		(*children)[ children->size()-1 ].width += (width-combinedWidth);
+	}
+	delete [] totalWidths;
 }
 void resizeAllDivs(Div &div,int width){
 
@@ -280,10 +330,38 @@ void resizeAllDivs(Div &div,int width){
 		}
 		else{
 
+			getChildWidth( &div.children , width );
+			for (int i = 0; i < div.children.size(); i++){
+				int childWidth = div.children[i].width-2*PADDING;
+				resizeAllDivs( div.children[i],childWidth);
+			}
+			
+		}
+	}
+}
+void resizeAllDivs2(Div &div,int width){
+
+
+	cout << "Width: "<<width<<endl;
+
+	div.width = width;
+
+	if( div.children.size() > 0 ){
+
+		if( div.divOrientation == Div::VERTICAL ){
+
+			for(int i = 0; i < div.children.size(); i++){
+
+				resizeAllDivs(div.children[i],width-2*PADDING);
+			}
+		}
+		else{
+
 			size_t childWidth = width/div.children.size()-2*PADDING;
+
 			for (int i = 0; i < div.children.size(); i++){
 
-				resizeAllDivs(div.children[i],childWidth);
+				resizeAllDivs2(div.children[i],childWidth);
 			}
 			
 		}
@@ -490,7 +568,7 @@ vector<Div> removeDupDivs(vector<Div> divs){
 
 			if( !divs[i].match(nonDup[j]) ){
 
-				if( divs[i].similar(nonDup[j])){
+				if( divs[i].similar(nonDup[j],drawnDivWidth)){
 
 					matched = true;
 				}
@@ -517,6 +595,7 @@ Div setUpDivs(){
 				tempDiv.push_back(newDiv);
 			}
 		}
+		getMaxWidthOfAllDivs(tempDiv);
 		tempDiv = removeDupDivs(tempDiv);
 		printDivs(tempDiv);
 		cout<<"setup hierarchy"<<endl;
@@ -589,6 +668,11 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 		if( rect.width <20 && rect.height < 20 ){
 			continue;
 		}
+		/*
+		if (abs(rect.x + rect.width - img.cols) < 10 || abs(rect.y + rect.height - img.rows) < 10){
+			continue;
+		}
+		*/
 		if (checkShapes(approxShape)) {
 			// do nothing because it's a duplicate
 		}
@@ -596,7 +680,7 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 			Scalar color;
 			myShape newShape(approxShape);
 			newShape.pointSortX();
-			if ( approxShape.size() >=2 && approxShape.size()<7 && rect.width < 30  ){
+			if ( approxShape.size() >=2  && rect.width < 30  ){
 				newShape.type = 'l'; // l for line
 				color = Scalar(255, 255, 0);
 			}
@@ -627,15 +711,15 @@ int main(int argc, char** argv) {
 
 	cout << "Choose an image file"<<endl;
 	cout << " - 0 for rects2.png"<<endl;
-	cout << " - 1 for shapes6.png"<<endl;
+	cout << " - 1 for shapes13.png"<<endl;
 	cout << " - 2 for test.png'"<<endl;
 	cout << " - 3 for test2.png'"<<endl;
 	cout << " - 4 for htmlPhoto1.png'"<<endl;
 	cout << " - 5 for shapes7.png'"<<endl;
 	cout << " - 6 for shapes8.png'"<<endl;
-	cout << " - 7 for shapes9.png'"<<endl;
-	cout << " - 8 for shapes10.png'"<<endl;
-	cout << " - 9 for shapes11.png'"<<endl;
+	cout << " - 7 for shapes10.png'"<<endl;
+	cout << " - 8 for shapes11.png'"<<endl;
+	cout << " - 9 for shapes12.png'"<<endl;
 
 	int choice = getchar()-'0';
 
@@ -644,15 +728,15 @@ int main(int argc, char** argv) {
 	switch( choice ){
 
 		case 0:{file+="rects2.png";break;}
-		case 1:{file+="shapes6.png";break;}
+		case 1:{file+="shapes13.png";break;}
 		case 2:{file+="test.png";break;}
 		case 3:{file+="test2.png";break;}
 		case 4:{file+="htmlPhoto1.png";break;}
 		case 5:{file+="shapes7.png";break;}
 		case 6:{file+="shapes8.png";break;}
-		case 7:{file+="shapes9.png";break;}
-		case 8:{file+="shapes10.png";break;}
-		case 9:{file+="shapes11.png";break;}
+		case 7:{file+="shapes10.png";break;}
+		case 8:{file+="shapes11.png";break;}
+		case 9:{file+="shapes12.png";break;}
 		default:{file+="test.png";break;}
 	}
 	
@@ -669,7 +753,8 @@ int main(int argc, char** argv) {
 	mainDiv.printDivWithChildren(0);
 	string html = createHTML(mainDiv);
 	writeHTML(html);
+	cout << "cols: "<< img.cols << " rows: "<< img.rows <<endl;
 	waitKey(0);
-	system ("start file:///C:/Users/Holly/Documents/GitHub/Python-Image-Detect/UI%20Project/UI%20Project/output.html");
+	//system ("start file:///C:/Users/Holly/Documents/GitHub/Python-Image-Detect/UI%20Project/UI%20Project/output.html");
 	return 0;
 }

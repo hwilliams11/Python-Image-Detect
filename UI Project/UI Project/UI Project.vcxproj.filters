@@ -15,8 +15,75 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp">
+    <ClCompile Include="Div.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mainProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="myShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Div.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="myShape.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="HTML Drawings\htmlPhoto1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\htmlPhoto2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\rects2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes_gray.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes3.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes4.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes5.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes6.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes7.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes8.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shot.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\test.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\test2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes9.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="HTML Drawings\shapes10.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

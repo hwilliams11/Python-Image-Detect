@@ -60,7 +60,7 @@ bool Div::match(Div div2) const {
 	}
 	return false;
 }
-bool Div::similar(Div div2) const {
+bool Div::similar(Div div2,int divComparison) const {
 	if (abs(this->row - div2.row) < 10 &&
 		abs(this->col - div2.col) < 10 &&
 		abs(this->width - div2.width) < 20 &&

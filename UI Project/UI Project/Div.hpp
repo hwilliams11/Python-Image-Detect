@@ -30,6 +30,6 @@ public:
 	void setId(int divID);
 	string printDiv() const;
 	bool match(Div div2) const;
-	bool similar(Div div2) const;
+	bool similar(Div div2,int maxWidth) const;
 	void printDivWithChildren(int level);
 };
