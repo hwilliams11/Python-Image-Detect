@@ -17,6 +17,18 @@ const int PADDING=5;
 int drawnDivWidth = 0;
 int divComparison = 0;
 
+
+struct Website{
+	string name;
+	string address;
+
+	Website(string name,string address){
+		this->name = name;
+		this->address = address;
+	}
+};
+vector<Website> websites;
+
 //non member functions 
 //check to make sure there are no duplicates in the shapesvector.
 // returns true if it's a duplicate, false otherwise
@@ -56,12 +68,20 @@ void checkShapeType() {
         int count = 0;
         for (int i = 0; i < myShapes.size(); i++) {
                 if (myShapes[i].type == 'T') {
+					/*
                         myShapes[i].pointSortX();
                         xrange1 = myShapes[i].points[0].x;
                         xrange2 = myShapes[i].points[3].x;
                         myShapes[i].pointSortY();
                         yrange1 = myShapes[i].points[0].y;
                         yrange2 = myShapes[i].points[3].y;
+						*/
+						Rect rect = boundingRect( myShapes[i].points );
+						xrange1 = rect.x;
+						xrange2 = rect.x+rect.width;
+						yrange1 = rect.y;
+						yrange2 = rect.y+rect.height;
+
                         for (int j = 0; j < myShapes.size(); j++) {
                                 if (myShapes[j].type == 'l') {
 									for (int y = 0; y < myShapes[j].size; y++) {
@@ -147,6 +167,63 @@ string getPreparedText(int width,int height){
 	return text;
 	
 }
+vector<Website> getLinks(int height){
+
+	const int LINEHEIGHT = 20;
+	int preferredNumLines = height/LINEHEIGHT;
+	vector<Website> links;
+	int i= rand()%websites.size();
+
+	while( links.size() < preferredNumLines ){
+
+		links.push_back(  websites[i++] );
+		if( i==websites.size() ){
+			i=0;
+		}
+	}
+	return links;
+}
+string getTable(int width,int height,int tabLevel){
+
+	const int CHARWIDTH = 5;
+	const int LINEHEIGHT = 40;
+	int numCols = width/(CHARWIDTH*10);
+	int numRows = height/LINEHEIGHT;
+	string tabs = "";
+
+	for(int i=0;i<tabLevel;i++)
+		tabs+="\t";
+
+	string table = tabs+"<table class=\"table\">\r\n";
+
+	for(int i=0;i<numRows;i++){
+		table+=tabs+"\t<tr>\n";
+		for(int j=0;j<numCols;j++ ){
+
+			string num = std::to_string((i*numCols)+j+1);
+			table+=tabs+"\t\t<td>"+num+"</td>\r\n";
+
+		}
+		table+=tabs+"\t</tr>\r\n";
+	}
+	table+=tabs+"</table>\r\n";
+	return table;
+}
+void getDummyLinks(){
+
+	ifstream linksFile("dummy_links.csv");
+	string line="";
+	if( !linksFile.is_open() ){
+		cout << "Problem opening links file"<<endl;
+	}
+	while( getline(linksFile,line) ){
+		int comma = line.find(',');
+		string name = line.substr(0,comma);
+		string address = line.substr(comma+1,line.length());
+		websites.push_back( Website(name,address) );
+	}
+	linksFile.close();
+}
 string createHead(){
 
 
@@ -227,6 +304,13 @@ string createBody(Div div,int divOrientation,string body,int tabLevel,bool float
 			sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
 			body += tabs+"<div "+string(info)+">\r\n";
 			body += tabs+"\t<ul>\r\n";
+			vector<Website> links = getLinks(div.height);
+			for(int i=0;i<links.size();i++){
+
+				Website w = links[i];
+				body += tabs+"\t\t<li><a href=\""+w.address+"\"/>"+w.name+"</a></li>\r\n";
+			}
+			/*
 				body += tabs+"\t\t<li><a href=\"www.google.com\"/>Google</a></li>\r\n";
 				body += tabs+"\t\t<li><a href=\"www.yahoo.com\"/>Yahoo</a></li>\r\n";
 				body += tabs+"\t\t<li><a href=\"www.bing.com\"/>Bing</a></li>\r\n";
@@ -236,6 +320,7 @@ string createBody(Div div,int divOrientation,string body,int tabLevel,bool float
 						body += tabs+"\t\t\t\t<li><a href=\"www.nytimes.com\"/>New York Times</a></li>\r\n";
 					body += tabs+"\t\t\t</ul>\r\n";
 				body += tabs+"\t\t</li>\r\n";
+			*/
 			body += tabs+"\t</ul>\r\n";
 			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 			return body;
@@ -245,6 +330,7 @@ string createBody(Div div,int divOrientation,string body,int tabLevel,bool float
 			body += tabs+"<div style=\"float:left\">\r\n";
 			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:%dpx;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING,div.height);
 			body += tabs+"\t<div "+string(info)+">\r\n";
+			/*
 			body += tabs+"\t\t<table>\r\n";
 				body += tabs+"\t\t\t<tr>\r\n";
 					body += tabs+"\t\t\t<td>1</td>\r\n";
@@ -267,6 +353,8 @@ string createBody(Div div,int divOrientation,string body,int tabLevel,bool float
 					body += tabs+"\t\t\t<td>12</td>\r\n";
 				body += tabs+"\t\t\t</tr>\r\n";
 			body += tabs+"\t\t</table>\r\n";
+			*/
+			body += getTable(div.width,div.height,tabLevel+2);
 			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 			body += tabs+"</div>\r\n";
 			return body;
@@ -747,23 +835,43 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 	Mat threshImage;
 	vector<vector<Point> > contours;
 	vector<Point> approxShape;
-
-	double ret = threshold(src_gray,threshImage,127,255,1);
+	/*
+	threshold(src_gray,threshImage,127,255,THRESH_BINARY_INV);
+	imshow("INV",threshImage);
+	threshold(src_gray,threshImage,127,255,THRESH_TRUNC);
+	imshow("TRUNC",threshImage);
+	threshold(src_gray,threshImage,127,255,THRESH_TOZERO);
+	imshow("2ZERO",threshImage);
+	threshold(src_gray,threshImage,127,255,THRESH_TOZERO_INV);
+	imshow("2ZEROINV",threshImage);
+	*/
+	double ret = threshold(src_gray,threshImage,127,255,THRESH_BINARY_INV);
 	findContours(threshImage,contours,1,2);
+	imshow("THRESH",threshImage);
+	
+	int compareVal = 30;
 
 	for (int i = 0; i < contours.size(); i++)
 	{
 		approxPolyDP(contours[i], approxShape, 0.01*arcLength(contours[i], true), true);
 		Rect rect = boundingRect( contours[i] );
 
-		if( rect.width <20 && rect.height < 20 ){
+		if( rect.width < compareVal && rect.height < compareVal ){
 			continue;
 		}
-		/*
-		if (abs(rect.x + rect.width - img.cols) < 10 || abs(rect.y + rect.height - img.rows) < 10){
+		if( rect.x < 10 || rect.y < 10 || rect.x+rect.width + 20 > img.cols || rect.y+rect.height + 20 > img.rows ){
 			continue;
+		}/*
+		int count=0;
+		for(int i=0;i<approxShape.size();i++){
+
+			if( approxShape[i].x < 5 || approxShape[i].x > img.cols - 5 || approxShape[i].y < 5 || approxShape[i].y > img.rows - 5 ){
+				count ++;
+			}
 		}
-		*/
+		if( count > 0.5*approxShape.size() ){
+			continue;
+		}*/
 		if (checkShapes(approxShape)) {
 			// do nothing because it's a duplicate
 		}
@@ -771,11 +879,11 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 			Scalar color;
 			myShape newShape(approxShape);
 			newShape.pointSortX();
-			if ( approxShape.size() >=2  && rect.width < 30  ){
+			if ( approxShape.size() >=2  && rect.width < compareVal && rect.height > compareVal ){
 				newShape.type = 'l'; // l for line
 				color = Scalar(255, 255, 0);
 			}
-			else if( approxShape.size() >=2 && rect.height < 30 ){
+			else if( approxShape.size() >=2 && rect.height < compareVal && rect.width > compareVal){
 				newShape.type = 't'; // t for triangle
 				color = Scalar(0,255,0);
 			}
@@ -787,6 +895,10 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 				newShape.type = 'T'; // T for Text
 				color = Scalar(255,0,0);
 			}
+			else if (approxShape.size() > 4 && abs( rect.height - rect.width ) > compareVal ){
+				newShape.type = 'T'; // T for Text
+				color = Scalar(255,0,0);
+			}
 			else if (approxShape.size() > 7 ){// it's a circle
 				newShape.type = 'c'; // c for circle
 				color = Scalar(0,0,255);
@@ -794,6 +906,10 @@ void doWork2(Mat &img, Mat &src_gray, int, void*)
 			myShapes.push_back(newShape);
 			drawContours(img, contours, i, color, 2);
 		}
+	}
+	for(int i=0;i<myShapes.size();i++){
+		Rect rect = boundingRect(myShapes[i].points);
+		printf("Size: %d bounding box (%d,%d) %dx%d\n",myShapes[i].points.size(),rect.x,rect.y,rect.width,rect.height);
 	}
 	cout << "Checking shape type"<<endl;
 	checkShapeType();
@@ -811,8 +927,12 @@ int main(int argc, char** argv) {
 	cout << " - 7 for shapes10.png'"<<endl;
 	cout << " - 8 for shapes11.png'"<<endl;
 	cout << " - 9 for shapes12.png'"<<endl;
+	cout << " - 10 for Capture3.png"<<endl;
 
-	int choice = getchar()-'0';
+	//int choice = getchar()-'0';
+	char buf[10];
+	fgets(buf,5,stdin);
+	int choice = atoi(buf);
 
 	string file = "HTML Drawings/";
 
@@ -828,24 +948,30 @@ int main(int argc, char** argv) {
 		case 7:{file+="shapes10.png";break;}
 		case 8:{file+="shapes11.png";break;}
 		case 9:{file+="shapes12.png";break;}
+		case 10:{file+="Capture3.png";break;}
 		default:{file+="test.png";break;}
 	}
 	
 	Mat img, gray;
 	cout << "Read image" << endl;
 	readImage(file, &img, &gray);
+	getDummyLinks();
+	
+
 	cout << "Do work" << endl;
 	doWork2(img,gray, 0, 0);
 	cout << "Setup divs" << endl;
-	Div mainDiv = setUpDivs();
 	imshow("Main image", img);
+	waitKey(0);
+	Div mainDiv = setUpDivs();
 	cout << "printing hierarchy" << mainDiv.children.size() << endl;
 	resizeAllDivs(mainDiv,MAX_PAGE_WIDTH,MAX_PAGE_HEIGHT);
 	mainDiv.printDivWithChildren(0);
 	string html = createHTML(mainDiv);
 	writeHTML(html);
 	cout << "cols: "<< img.cols << " rows: "<< img.rows <<endl;
-	waitKey(0);
-	//system ("start file:///C:/Users/Holly/Documents/GitHub/Python-Image-Detect/UI%20Project/UI%20Project/output.html");
+	
+	
+	system ("start file:///C:/Users/Holly/Documents/GitHub/Python-Image-Detect/UI%20Project/UI%20Project/output.html");
 	return 0;
 }

@@ -22,12 +22,20 @@ Div::Div(Div *div){
 }
 
 Div::Div(myShape *ms) {
+	/*
 	ms->pointSortX();
 	this->col = ms->points[0].x;
 	this->width = abs(ms->points[3].x - ms->points[0].x);
 	ms->pointSortY();
 	this->row = ms->points[0].y;	
 	this->height = abs(ms->points[3].y - ms->points[0].y);
+	*/
+	Rect rect = boundingRect(ms->points);
+	this->col = rect.x;
+	this->row = rect.y;
+	this->width = rect.width;
+	this->height = rect.height; 
+
 	this->children = (vector<Div>)NULL;
 	this->divOrientation = NONE;
 	switch( ms->type ){
