@@ -1,6 +1,7 @@
 #include "Div.hpp"
 #include "myShape.hpp"
 #include <fstream>
+#include <time.h>
 using namespace cv;
 using namespace std;
 
@@ -169,9 +170,10 @@ string getPreparedText(int width,int height){
 }
 vector<Website> getLinks(int height){
 
-	const int LINEHEIGHT = 20;
+	const int LINEHEIGHT = 25;
 	int preferredNumLines = height/LINEHEIGHT;
 	vector<Website> links;
+	srand(time(NULL));
 	int i= rand()%websites.size();
 
 	while( links.size() < preferredNumLines ){
@@ -187,7 +189,7 @@ string getTable(int width,int height,int tabLevel){
 
 	const int CHARWIDTH = 5;
 	const int LINEHEIGHT = 40;
-	int numCols = width/(CHARWIDTH*10);
+	int numCols = width/(CHARWIDTH*15);
 	int numRows = height/LINEHEIGHT;
 	string tabs = "";
 
@@ -230,17 +232,7 @@ string createHead(){
 	string head = "<html>\r\n";
 	head += "\t<head>\r\n";
 	head += "\t\t<link rel=\"stylesheet\" href=\"css/bootstrap.css\"  type=\"text/css\"/>\r\n";
-	head += "\t<style type=\"text/css\">\r\n";
-	head += "\t\ttable{\r\n";
-	head += "\t\t\tmargin: 0 auto;\r\n";
-	head += "\t\t}\r\n";
-	head += "\t\tdiv{\r\n";
-	head += "\t\t\tpadding:"+std::to_string(PADDING)+"px";
-	head += "\t\t}\r\n";
-	head += "\t\timg{\r\n";
-	head += "\t\t\tdisplay:block;\r\n";
-	head += "\t\t\tmargin: 0 auto;\r\n";
-	head += "\t\t}\r\n</style>\r\n";
+	head += "\t\t<link rel=\"stylesheet\" href=\"style.css\"  type=\"text/css\"/>\r\n";
 	head += "\t</head>\r\n";
 	head += "\t<body>\r\n";
 	head += "\t\t<script src=\"http://code.jquery.com/jquery-1.10.1.min.js\"></script>\r\n";
@@ -303,24 +295,13 @@ string createBody(Div div,int divOrientation,string body,int tabLevel,bool float
 			
 			sprintf(info,"id=\"%d\" style=\"float:left;width:%dpx;\"",div.id,div.width);
 			body += tabs+"<div "+string(info)+">\r\n";
-			body += tabs+"\t<ul>\r\n";
+			body += tabs+"\t<ul class=\"nav nav-list\">\r\n";
 			vector<Website> links = getLinks(div.height);
 			for(int i=0;i<links.size();i++){
 
 				Website w = links[i];
 				body += tabs+"\t\t<li><a href=\""+w.address+"\"/>"+w.name+"</a></li>\r\n";
 			}
-			/*
-				body += tabs+"\t\t<li><a href=\"www.google.com\"/>Google</a></li>\r\n";
-				body += tabs+"\t\t<li><a href=\"www.yahoo.com\"/>Yahoo</a></li>\r\n";
-				body += tabs+"\t\t<li><a href=\"www.bing.com\"/>Bing</a></li>\r\n";
-				body += tabs+"\t\t<li>\r\n";
-					body += tabs+"\t\t\t<ul>\r\n";
-						body += tabs+"\t\t\t\t<li><a href=\"www.cnn.com\"/>CNN</a></li>\r\n";
-						body += tabs+"\t\t\t\t<li><a href=\"www.nytimes.com\"/>New York Times</a></li>\r\n";
-					body += tabs+"\t\t\t</ul>\r\n";
-				body += tabs+"\t\t</li>\r\n";
-			*/
 			body += tabs+"\t</ul>\r\n";
 			body += tabs+"</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 			return body;
@@ -330,30 +311,6 @@ string createBody(Div div,int divOrientation,string body,int tabLevel,bool float
 			body += tabs+"<div style=\"float:left\">\r\n";
 			sprintf(info,"id=\"%d\" style=\"width:%dpx;height:%dpx;display:table-cell;vertical-align:middle;\"",div.id,div.width-2*PADDING,div.height);
 			body += tabs+"\t<div "+string(info)+">\r\n";
-			/*
-			body += tabs+"\t\t<table>\r\n";
-				body += tabs+"\t\t\t<tr>\r\n";
-					body += tabs+"\t\t\t<td>1</td>\r\n";
-					body += tabs+"\t\t\t<td>2</td>\r\n";
-					body += tabs+"\t\t\t<td>3</td>\r\n";
-				body += tabs+"\t\t\t</tr>\r\n";
-				body += tabs+"\t\t\t<tr>\r\n";
-					body += tabs+"\t\t\t<td>4</td>\r\n";
-					body += tabs+"\t\t\t<td>5</td>\r\n";
-					body += tabs+"\t\t\t<td>6</td>\r\n";
-				body += tabs+"\t\t\t</tr>\r\n";
-				body += tabs+"\t\t\t<tr>\r\n";
-					body += tabs+"\t\t\t<td>7</td>\r\n";
-					body += tabs+"\t\t\t<td>8</td>\r\n";
-					body += tabs+"\t\t\t<td>9</td>\r\n";
-				body += tabs+"\t\t\t</tr>\r\n";
-				body += tabs+"\t\t\t<tr>\r\n";
-					body += tabs+"\t\t\t<td>10</td>\r\n";
-					body += tabs+"\t\t\t<td>11</td>\r\n";
-					body += tabs+"\t\t\t<td>12</td>\r\n";
-				body += tabs+"\t\t\t</tr>\r\n";
-			body += tabs+"\t\t</table>\r\n";
-			*/
 			body += getTable(div.width,div.height,tabLevel+2);
 			body += tabs+"\t</div><!-- end"+std::to_string(div.id)+"!-->\r\n";
 			body += tabs+"</div>\r\n";
